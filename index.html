@@ -1,42 +1,10 @@
 <!doctype html>
 <html lang="pl">
-  <!--
-    ================================================================
-    EGZAMIN ANDROID — QUIZ (jeden plik: HTML + CSS + dane + JS)
-    ================================================================
-    Struktura tego pliku (żeby łatwo się po nim poruszać):
-
-      1. <head><style>   CSS, podzielony na ponumerowane sekcje
-                         (zmienne kolorów, layout, opcje, przyciski...)
-
-      2. <body>          Markup trzech "ekranów" (pokazywanych/skrywanych
-                         klasą .hidden): start-screen / quiz-screen /
-                         result-screen.
-
-      3. <textarea id="quiz-data">
-                         Baza pytań jako czysty tekst — to TUTAJ dodajesz,
-                         usuwasz i edytujesz pytania. Dokładny format opisany
-                         jest w komentarzu nad funkcją parseQuestions()
-                         w sekcji <script> poniżej.
-
-      4. <script>        Cała logika aplikacji: parsowanie bazy pytań,
-                         stan quizu, renderowanie ekranów. Podzielona na
-                         ponumerowane sekcje (CONFIG, DOM, parsowanie,
-                         narzędzia, stan, logika ekranów, zdarzenia).
-    ================================================================
-  -->
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz - Egzamin Android</title>
     <style>
-
-      /* ============================================================
-         1. ZMIENNE KOLORÓW — JASNY / CIEMNY MOTYW
-         Wszystkie kolory w aplikacji są zdefiniowane tutaj jako zmienne
-         CSS. Żeby zmienić paletę kolorów całego quizu, edytuj TYLKO
-         wartości w tym jednym miejscu (+ blok @media poniżej dla dark mode).
-         ============================================================ */
       :root {
         --primary: #007aff;
         --primary-hover: #0056b3;
@@ -68,14 +36,7 @@
           --option-selected: #1a2a3a;
           --option-selected-border: #0a84ff;
         }
-        code {
-          color: #ff6b6b;
-        }
       }
-
-      /* ============================================================
-         2. RESET I LAYOUT BAZOWY (strona + karta z quizem)
-         ============================================================ */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background-color: var(--bg);
@@ -100,10 +61,6 @@
       .hidden {
         display: none !important;
       }
-
-      /* ============================================================
-         3. EKRAN STARTOWY / NAGŁÓWKI
-         ============================================================ */
       h1 {
         margin-top: 0;
         color: var(--text);
@@ -118,10 +75,6 @@
         margin-bottom: 35px;
         line-height: 1.6;
       }
-
-      /* ============================================================
-         4. PASEK POSTĘPU (progress bar)
-         ============================================================ */
       .progress {
         font-size: 0.95em;
         font-weight: 600;
@@ -145,10 +98,6 @@
         width: 0%;
         transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
-
-      /* ============================================================
-         5. TREŚĆ PYTANIA (+ styl dla fragmentów kodu `jak ten`)
-         ============================================================ */
       .question-box {
         margin-bottom: 30px;
       }
@@ -166,10 +115,9 @@
         font-family: monospace;
         color: #d50000;
       }
-
-      /* ============================================================
-         6. OPCJE ODPOWIEDZI (stany: domyślny / wybrany / poprawny / błędny)
-         ============================================================ */
+      @media (prefers-color-scheme: dark) {
+        code { color: #ff6b6b; }
+      }
       .option {
         display: flex;
         align-items: center;
@@ -201,10 +149,6 @@
         border-color: var(--danger);
         opacity: 0.8;
       }
-
-      /* ------------------------------------------------------------
-         6a. Wskaźnik wyboru (kółko radiowe) wewnątrz każdej opcji
-         ------------------------------------------------------------ */
       .checkbox-indicator {
         width: 22px;
         height: 22px;
@@ -250,10 +194,6 @@
         font-weight: bold;
         font-size: 14px;
       }
-
-      /* ============================================================
-         7. PRZYCISKI AKCJI (Start / Sprawdź / Następne / Restart)
-         ============================================================ */
       .btn {
         display: block;
         width: 100%;
@@ -276,10 +216,6 @@
         cursor: not-allowed;
         opacity: 0.5;
       }
-
-      /* ============================================================
-         8. KOMUNIKAT ZWROTNY PO SPRAWDZENIU ODPOWIEDZI + UZASADNIENIE
-         ============================================================ */
       .feedback {
         margin-top: 25px;
         padding: 16px;
@@ -308,10 +244,6 @@
         padding-top: 10px;
         color: var(--text);
       }
-
-      /* ============================================================
-         9. EKRAN WYNIKU KOŃCOWEGO
-         ============================================================ */
       .score-container {
         text-align: center;
       }
@@ -322,18 +254,10 @@
         margin: 20px 0;
         letter-spacing: -0.02em;
       }
-
-      /* ============================================================
-         10. ANIMACJE
-         ============================================================ */
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
       }
-
-      /* ============================================================
-         11. RESPONSYWNOŚĆ (telefony / wąskie ekrany)
-         ============================================================ */
       @media (max-width: 600px) {
         .quiz-container { padding: 25px 20px; }
         h1 { font-size: 1.8em; }
@@ -349,7 +273,7 @@
         <h1>Egzamin Android - Quiz</h1>
         <p class="intro-text">
           Baza pytań zaktualizowana. Wszystkie pytania traktowane są jako pytania <strong>jednokrotnego wyboru</strong>.<br /><br />
-          Z naszej puli <strong><span id="total-q-count"></span> pytań</strong> aplikacja losuje <strong><span id="session-q-count"></span> zagadnień</strong> na każdą sesję.
+          Z naszej puli <strong><span id="total-q-count"></span> pytań</strong> aplikacja losuje <strong>21 zagadnień</strong> na każdą sesję.
         </p>
         <button class="btn" id="start-btn">Rozpocznij Quiz</button>
       </div>
@@ -382,13 +306,7 @@
       </div>
     </div>
 
-    <!--
-      Ukryty magazyn danych: surowy tekst bazy pytań.
-      Format pojedynczego pytania opisany jest w komentarzu nad funkcją
-      parseQuestions() w sekcji <script> poniżej. W skrócie: "N) treść",
-      potem opcje "a) ... b) ... **c) poprawna** ... d) ...",
-      opcjonalnie linia "Uzasadnienie: ...".
-    -->
+    <!-- Ukryty magazyn danych zabezpieczający surowy tekst przed rozsypaniem HTML-a -->
     <textarea id="quiz-data" style="display: none;">
 1) Które stwierdzenie dotyczące odbiorców rozgłoszeń (broadcast receivers) jest fałszywe?
 a) umożliwiają przesyłanie informacji pomiędzy składnikami tej samej aplikacji
@@ -460,13 +378,6 @@ c) LinearLayout
 d) TableLayout
 Uzasadnienie: Linear i Table to obvious, FrameLayout jest na Wear OS
 
-11) Style:
-a) istnieją tylko jako standardowe style wbudowane w Androida
-**b) pozwalają na zdefiniowanie zestawów atrybutów i stosowanie ich do komponentów**
-c) nie obsługują dziedziczenia
-d) są definiowane w plikach css
-Uzasadnienie: Slajdy 283-284, style w androidzie nie są definiowane w css (tylko xml)
-
 12) Środowiskiem uruchomieniowym (runtime) w Androidzie jest:
 a) CLR
 **b) android runtime (ART)**
@@ -480,13 +391,6 @@ b) obsługi zdarzeń interfejsu użytkownika
 c) zarządzania grupą wątków
 **d) wykonywania zadań w określonym (niekoniecznie głównym) wątku (do przekazywania zadań do wykonania między wątkami)**
 Uzasadnienie: "Klasa frameworku Androida, która rozwiązuje problem przesyłania danych między wątkami wykonującymi pewne zadania a wątkiem GUI" (slajd 198)
-
-14) W skład projektu aplikacji dla systemu Android wchodzą:
-**a) pliki źródłowe, pliki zasobów, biblioteki**
-b) tylko pliki źródłowe java/kotlin
-c) tylko pliki źródłowe stworzone przez programistę i pliki wygenerowane automatycznie (np. klasa R)
-d) tylko pliki źródłowe i pliki zasobów
-Uzasadnienie: Slajd 35
 
 15) We współczesnych wersjach Androida aby aplikacja mogła nawiązywać połączenia sieciowe należy
 a) zaimplementować żądanie dostępu do sieci w trakcie wykonania aplikacji
@@ -502,21 +406,14 @@ c) zainstalowanie sterowników urządzenia (Windows)/ zainstalowanie lub stworze
 **d) zezwolenie na wykorzystanie fizycznego urządzenia w Android Studio**
 Uzasadnienie: "Aby ADB mogło komunikować się z podłączonym konieczne są reguły tworzenia urządzeń w systemie plików udev", "Windows: Należy zainstalować sterowniki urządzenia" (slajd 28)
 
-17) Korzystanie z Firebase w aplikacji mobilnej nie wymaga
-a) stworzenia projektu w konsoli Firebase
-**b) włączenia Google Analitics**
-c) dodania aplikacji i pobrania konfiguracji w pliku json
-d) dodana zależności w plikach build.gradle
-Uzasadnienie: Slajdy 258 
-
 18) Które stwierdzenie na temat jednostki „dp” jest nieprawdziwe?
 a) rozwinięcie skrótu to device/denstity independent pixel
-b) 1 dp to jeden piksel na ekranie
-**c) 1 dp to pewna liczba pikseli zależna od gęstości pikseli na ekranie**
+**b) 1 dp to jeden piksel na ekranie**
+c) 1 dp to pewna liczba pikseli zależna od gęstości pikseli na ekranie
 d) pozwala na uzyskanie określonych rozmiarów elementów niezależnie od gęstości pikseli
 Uzasadnienie: Slajd 72 i https://stackoverflow.com/questions/2025282/what-is-the-difference-between-px-dip-dp-and-sp
 
-19) W Firebase wynikiem zapytania jest
+19) W Firebase wynikiem zapytania jest:
 a) kursor
 **b) kolekcja obiektów QueryDocumentSnapshot**
 c) kolekcja map reprezentujących rekordy
@@ -558,7 +455,7 @@ c) TableLayout
 d) FrameLayout
 Uzasadnienie: To prawda
 
-25) Doodbierania rozgłoszeń (broadcasts) służy
+25) Do odbierania rozgłoszeń (broadcasts) służy:
 a) metodarecieveBroadcast()
 **b) klasa dziedzicząca po BroadcastReceiver**
 c) klasa dziedzicząca po AppBroadcastReceiver
@@ -578,34 +475,6 @@ b) onCreate(), onResume(), onStart(), onStop(), onPause(), onDestroy()
 c) onCreate(), onStart(), onResume(), onStop(), onPause(), onDestroy()
 d) onCreate(), onStart(), onStop(), onDestroy()
 Uzasadnienie: Slajd 52
-
-29) W bieżących wersjach Androida
-a) aplikacja musi prosić o wszystkie uprawnienia w trakcie wykonania
-b) użytkownik zatwierdza wszystkie wymagane uprawnienia w momencie instalacji
-c) wystarczy umieścić wszystkie wymagane uprawnienia w manifeście i aplikacja automatycznie je otrzyma
-**d) aplikacja otrzymuje minimalny zestaw uprawnień ale musi prosić ododatkowe wtrakcie wykonania**
-Uzasadnienie: Slajd 15
-
-30) Do wykonywania zadań w tle w systemie Android nie można wykorzystać:
-a) standardowych wątków Javy
-**b) pochodnej klasy BackgroundTask**
-c) Klasy HandlerThread
-d) pochodnej klasy Service
-Uzasadnienie: Gemini
-
-31) We współczesnych wersjach Androida usługi:
-a) mogą działać bez ograniczeń
-b) mogą działać maksymalnie przez 5 minut
-**c) mogą działać dowolnie długo pod warunkiem, że są pierwszoplanowe**
-d) nie muszą wyświetlać powiadomień
-Uzasadnienie: Slajd 215
-
-32) Zależności aplikacji (dodatkowe biblioteki) określa się w pliku:
-a) AndroidManifest.xml
-**b) build.gradle**
-c) dependencies.gradle
-d) project properties
-Uzasadnienie: Prawda
 
 33) Lista stanów
 a) typ wyliczeniowy określający stany, w których może znajdować się komponent graiczny
@@ -634,13 +503,6 @@ a) bazie SQLite i pliku tekstowym w formacie XML
 c) usłudze REST   
 d) pliku tekstowym w formacie JSON
 Uzasadnienie: Slajd 183
-
-37) W bibliotece Retrofit w klasie Call metoda enqueue(): 
-a) wykonuje żądania natychmiast w głównym wątku aplikacji   
-b) kolejkuje żądanie do wykonania w głównym wątku aplikacji   
-c) asynchronicznie wykonuje zadanie w głównym wątku   
-**d) asynchronicznie wykonuje zadania w dodatkowym wątku**
-Uzasadnienie: ChatGPT
 
 38) Opcje na pasku aplikacji: 
 a) tworzy się w metodzie onCreateAppBarMenu() a obsługuje w onAppBarItemSelected() 
@@ -683,13 +545,6 @@ a) instalowania aplikacji
 c) wyświetlanie logów
 d) kopiowanie plików
 Uzasadnienie: Slajd 31
-
-44) Który element nie jest konieczny przy tworzeniu usługi pierwszoplanowej: 
-a) umieszczenie uprawnienia FOREGROUD_SERVICE w manifeście   
-b) utworzenie powiadomienia   
-**c) poproszenie użytkownika nadanie uprawnienia w trakcie wykonania aplikacji**
-d) wywołanie metody startForegroud() w usłudze
-Uzasadnienie: Slajdy 215-220
 
 45) Klasą bazową dla pojemników (m.in. layoutów) jest klasa:   
 a) Layout   
@@ -829,7 +684,7 @@ a) mogą działać bez ograniczeń
 b) mogą działać maksymalnie przez 5 minut
 **c) mogą działać dowolnie długo pod warunkiem, że są pierwszoplanowe**
 d) nie muszą wyświetlać powiadomień
-Uzasadnienie: Od Androida 8 (API 26) system rygorystycznie "ubija" usługi w tle celem oszczędzania baterii, chyba że podniesiesz je do rangi widocznej dla użytkownika usługi pierwszoplanowej (Foreground Service)
+Uzasadnienie: Od Androida 8 (API 26) system rygorystycznie "ubija" usługi w tle celem oszczędzania baterii, chyba że podniesiesz je do rangi widocznej dla użytkownika usługi pierwszoplanowej (Foreground Service) slajd 215
 
 65) Które stwierdzenie na temat stylów nie jest prawdziwe?
 a) styl dziedziczy po stylu, którego nazwa jest określona w atrybucie parent
@@ -878,7 +733,7 @@ a) umieszczenie uprawnienia FOREGROUND_SERVICE w manifeście
 **b) poproszenie użytkownika o nadanie uprawnienia w trakcie wykonywania aplikacji**
 c) utworzenie powiadomienia
 d) wywołanie metody startForeground() w usłudze
-Uzasadnienie: Uprawnienie FOREGROUND_SERVICE jest uprawnieniem typu "normal", więc wystarczy jedynie wpisać je w pliku XML manifestu bez wywoływania specjalnych, wyskakujących okienek dla użytkownika podczas działania programu.
+Uzasadnienie: Uprawnienie FOREGROUND_SERVICE jest uprawnieniem typu "normal", więc wystarczy jedynie wpisać je w pliku XML manifestu bez wywoływania specjalnych, wyskakujących okienek dla użytkownika podczas działania programu. Slajdy 215-220
 
 72) Aktywności nie można uruchomić za pomocą:
 **a) metody startActivity(intencja)**
@@ -948,7 +803,7 @@ a) zarejestrowanie odbiorcy
 b) użycie klasy BroadcastReceiver
 c) uruchomienie wątku klasy Handler Thread
 **d) użycie metod onCreate(), onReceive()**
-Uzasadnienie: Podstawowym punktem wejścia dla obiektu BroadcastReceiver jest metoda onReceive() i komponent ten z natury w ogóle nie implementuje ani nie wywołuje metody onCreate().
+Uzasadnienie: Handler Thread też nie jest konieczny (druga poprawna odpowiedź?). Podstawowym punktem wejścia dla obiektu BroadcastReceiver jest metoda onReceive() i komponent ten z natury w ogóle nie implementuje ani nie wywołuje metody onCreate().
 
 82) Klasy rozmiaru okna, które należy uwzględnić tworząc aplikację dla Androida to:
 a) telefon / tablet / TV
@@ -992,13 +847,6 @@ b) relacyjna baza danych działająca na urządzeniu mobilnym
 d) dokumentowa baza danych działająca na urządzeniu mobilnym
 Uzasadnienie: Firestore nie opiera się na tabelach typowych baz SQL, tylko przechowuje bezszablonowe dane w formie kolekcji elastycznych dokumentów chmurowych, zapewniających natychmiastową synchronizację dla wszystkich połączonych klientów na bieżąco.
 
-88) Które stwierdzenie na temat ustawień współdzielonych nie jest prawdziwe?
-a) możliwe jest ustawienie wartości domyślnych ustawień zawsze uwzględnianych w kodzie Java/Kotlin
-b) możliwe jest reagowanie na zmianę konkretnego ustawienia
-c) możliwe jest reagowanie na zmianę wszystkich ustawień
-**d) możliwe jest tworzenie zależności między ustawieniami**
-Uzasadnienie: Slajd 183
-
 89) Klasa Handler:
 a) może służyć do tworzenia grup wątków
 b) może służyć do tworzenia pojedynczych wątków
@@ -1025,14 +873,14 @@ Uzasadnienie: Nakładki (ang. overlay) – interaktywne przewijane listy (slajd 
 b) aplikacja musi prosić o wszystkie uprawnienia w trakcie wykonania
 c) użytkownik zatwierdza wszystkie wymagane uprawnienia w momencie instalacji
 d) wystarczy umieścić wszystkie wymagane uprawnienia w manifeście i aplikacja automatycznie je otrzyma
-Uzasadnienie: Android rozgranicza uprawnienia w podziale na te normalne (nadawane odgórnie już z manifestu) oraz te "niebezpieczne" (Runtime Permissions), o które musisz poprosić wyświetlając użytkownikowi odpowiedni "popup" kiedy aplikacja użyje np. mikrofonu.
+Uzasadnienie: Android rozgranicza uprawnienia w podziale na te normalne (nadawane odgórnie już z manifestu) oraz te "niebezpieczne" (Runtime Permissions), o które musisz poprosić wyświetlając użytkownikowi odpowiedni "popup" kiedy aplikacja użyje np. mikrofonu. slajd 15
 
 93) W skład projektu aplikacji dla systemu Android wchodzą:
 **a) pliki źródłowe, pliki zasobów, biblioteki**
 b) tylko pliki źródłowe i pliki zasobów
 c) tylko pliki źródłowe Java/Kotlin
 d) tylko pliki źródłowe stworzone przez programistę i pliki wygenerowane automatycznie (np. klasa R)
-Uzasadnienie: Pełen zestaw środowiskowy potrzebny do wygenerowania paczki instalacyjnej (APK/AAB) zawsze zakłada obecność kodu imperatywnego, zasobów deklaratywnych i pobranych zależności.
+Uzasadnienie: Pełen zestaw środowiskowy potrzebny do wygenerowania paczki instalacyjnej (APK/AAB) zawsze zakłada obecność kodu imperatywnego, zasobów deklaratywnych i pobranych zależności. Slajd 35
 
 94) Przycisk ElevatedButton można zdezaktywować
 a) ustawiając parametr onPressed konstruktora na pustą funkcję () {}
@@ -1060,7 +908,7 @@ a) dodania aplikacji i pobrania konfiguracji w pliku json
 b) stworzenia projektu w konsoli Firebase
 **c) włączenia Google Analytics**
 d) dodania zależności w plikach build.gradle
-Uzasadnienie: Podłączenie modułu statystyk ułatwia śledzenie demografii, natomiast system ten jest rozwiązaniem opcjonalnym, odseparowanym od fundamentu bazy i nie blokuje dostępu np. do uwierzytelniania w backendzie.
+Uzasadnienie: Podłączenie modułu statystyk ułatwia śledzenie demografii, natomiast system ten jest rozwiązaniem opcjonalnym, odseparowanym od fundamentu bazy i nie blokuje dostępu np. do uwierzytelniania w backendzie. Slajdy 258
 
 98) Do przebudowania interfejsu aplikacji w momencie pojawienia się wartości w przyszłości służy
 **a) klasa FutureBuilder**
@@ -1088,223 +936,72 @@ a) istnieją tylko jako standardowe style wbudowane w Androida
 **b) pozwalają na zdefiniowanie zestawów atrybutów i stosowanie ich do komponentów**
 c) nie obsługują dziedziczenia
 d) są definiowane w plikach css
-Uzasadnienie: Korzystanie ze stylów drastycznie ogranicza "puchnięcie" powtarzalnego kodu źródłowego w XML, centralizując wybrane cechy czcionek czy marginesów w jednym, generycznym tagu.
+Uzasadnienie: Korzystanie ze stylów drastycznie ogranicza "puchnięcie" powtarzalnego kodu źródłowego w XML, centralizując wybrane cechy czcionek czy marginesów w jednym, generycznym tagu. Slajdy 283-284, style w androidzie nie są definiowane w css (tylko xml)
 </textarea>
 
     <script>
-      /* ================================================================
-         KONFIGURACJA
-         Jedyne miejsce, które trzeba zmienić, żeby dostosować zasady quizu
-         (np. liczbę pytań losowanych do jednej sesji).
-         ================================================================ */
-      const CONFIG = {
-        QUESTIONS_PER_SESSION: 21,
-      };
-
-      /* ================================================================
-         1. REFERENCJE DO ELEMENTÓW DOM
-         Wszystkie elementy pobierane są raz, przy starcie, i trzymane
-         w jednym obiekcie `dom`. Dzięki temu nie szukamy tych samych
-         elementów po ID wielokrotnie w każdej funkcji.
-         ================================================================ */
-      const dom = {
-        startScreen: document.getElementById("start-screen"),
-        quizScreen: document.getElementById("quiz-screen"),
-        resultScreen: document.getElementById("result-screen"),
-
-        startBtn: document.getElementById("start-btn"),
-        checkBtn: document.getElementById("check-btn"),
-        nextBtn: document.getElementById("next-btn"),
-        restartBtn: document.getElementById("restart-btn"),
-
-        totalQCount: document.getElementById("total-q-count"),
-        sessionQCount: document.getElementById("session-q-count"),
-        progressBar: document.getElementById("progress-bar"),
-        progressText: document.getElementById("progress-text"),
-        questionText: document.getElementById("question-text"),
-        optionsContainer: document.getElementById("options-container"),
-        feedbackMessage: document.getElementById("feedback-message"),
-        score: document.getElementById("score"),
-
-        quizDataTextarea: document.getElementById("quiz-data"),
-      };
-
-      /* ================================================================
-         2. PARSOWANIE BAZY PYTAŃ
-         ----------------------------------------------------------------
-         Pytania są przechowywane jako zwykły tekst w ukrytym elemencie
-         <textarea id="quiz-data"> (patrz w HTML, kawałek wyżej). Format
-         pojedynczego pytania wygląda tak:
-
-           N) Treść pytania (może zajmować kilka linii)
-           a) pierwsza odpowiedź
-           **b) poprawna odpowiedź (otoczona gwiazdkami ** na początku
-                i/lub końcu linii)**
-           c) kolejna odpowiedź
-           d) kolejna odpowiedź
-           Uzasadnienie: opcjonalny komentarz/wyjaśnienie (może się
-             rozciągać na kilka linii, parser dokleja je do siebie)
-
-         Zasady:
-           - "N)" zaczyna nowe pytanie. Numeracja może mieć przerwy
-             (np. po usunięciu pytania) — nie ma to wpływu na działanie
-             aplikacji, numery służą wyłącznie czytelności notatek.
-           - Każda opcja zaczyna się od litery a–d) na początku linii.
-           - Poprawną odpowiedź oznacza się gwiazdkami ** wokół litery
-             i/lub treści. Parser obsługuje też odpowiedzi rozbite na
-             kilka linii (dalsze linie są doklejane do ostatniej opcji,
-             aż natrafi na kolejną opcję/Uzasadnienie/nowe pytanie).
-           - Linia zaczynająca się od "Uzasadnienie:" (wielkość liter
-             nieistotna) przełącza w tryb wyjaśnienia.
-           - Logika obsługuje teoretycznie więcej niż jedną poprawną
-             odpowiedź na pytanie, ale obecny interfejs jest jednokrotnego
-             wyboru (patrz funkcja showQuestion) — każda pozycja w bazie
-             powinna mieć oznaczoną dokładnie jedną poprawną odpowiedź.
-         ================================================================ */
-
-      // Nazwane stałe stanu automatu parsującego (czytelniejsze niż "q"/"opt"/"exp")
-      const PARSE_STATE = {
-        QUESTION: "question",
-        OPTION: "option",
-        EXPLANATION: "explanation",
-      };
-
-      /**
-       * Zamienia surowy tekst z <textarea id="quiz-data"> na tablicę obiektów:
-       *   { question, options, correct, explanation }
-       * gdzie `correct` to tablica indeksów poprawnych opcji w `options`.
-       */
       function parseQuestions(rawText) {
         const cleanText = "\n" + rawText.trim();
-        // Dzielimy tekst na blok dla każdego pytania — granicą jest linia
-        // zaczynająca się od liczby i nawiasu, np. "12)".
         const blocks = cleanText.split(/\n\s*(?=\d+\))/);
         const questions = [];
 
-        blocks.forEach((block) => {
-          if (!block.trim()) return;
+        blocks.forEach(block => {
+            if (!block.trim()) return;
+            const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let qText = "";
+            let opts = [];
+            let exp = "";
+            let correctIdx = [];
+            let state = "q";
 
-          const lines = block
-            .split("\n")
-            .map((l) => l.trim())
-            .filter((l) => l.length > 0);
-
-          const questionNumberMatch = block.trim().match(/^(\d+)\)/);
-          const questionNumber = questionNumberMatch ? questionNumberMatch[1] : "?";
-
-          let questionText = "";
-          let options = [];
-          let explanation = "";
-          let correctIndexes = [];
-          let state = PARSE_STATE.QUESTION;
-
-          for (const line of lines) {
-            // 1) Linia "Uzasadnienie: ..." — przełącza w tryb wyjaśnienia.
-            if (line.toLowerCase().startsWith("uzasadnienie:")) {
-              state = PARSE_STATE.EXPLANATION;
-              explanation += line.substring("uzasadnienie:".length).trim() + " ";
-              continue;
+            for (let line of lines) {
+                if (line.toLowerCase().startsWith("uzasadnienie:")) {
+                    state = "exp";
+                    exp += line.substring(13).trim() + " ";
+                    continue;
+                }
+                const optMatch = line.match(/^\s*(?:\*\*)*([a-d])\)/);
+                if (optMatch && state !== "exp") {
+                    state = "opt";
+                    const isCorrect = line.includes('**');
+                    let cleanLine = line.replace(/^\s*(?:\*\*)*[a-d]\)\s*/, '').replace(/\*+$/, '').trim();
+                    if (isCorrect) correctIdx.push(opts.length);
+                    opts.push(cleanLine);
+                    continue;
+                }
+                if (state === "q") {
+                    qText += line + "\n";
+                } else if (state === "opt") {
+                    if (opts.length > 0) {
+                        let isCorrect = line.includes('**');
+                        let cleanLine = line.replace(/\*+$/, '').replace(/^\*+/, '').trim();
+                        opts[opts.length - 1] += " " + cleanLine;
+                        if (isCorrect && !correctIdx.includes(opts.length - 1)) correctIdx.push(opts.length - 1);
+                    }
+                } else if (state === "exp") {
+                    exp += line + " ";
+                }
             }
-
-            // 2) Linia zaczynająca nową opcję odpowiedzi: "a)", "**b)", itd.
-            const optionMatch = line.match(/^\s*(?:\*\*)*([a-d])\)/);
-            if (optionMatch && state !== PARSE_STATE.EXPLANATION) {
-              state = PARSE_STATE.OPTION;
-              const isMarkedCorrect = line.includes("**");
-              const cleanLine = line
-                .replace(/^\s*(?:\*\*)*[a-d]\)\s*/, "")
-                .replace(/\*+$/, "")
-                .trim();
-
-              if (isMarkedCorrect) correctIndexes.push(options.length);
-              options.push(cleanLine);
-              continue;
+            qText = qText.replace(/^\d+\)\s*/, '').trim();
+            if (opts.length > 0) {
+                questions.push({
+                    question: qText,
+                    options: opts,
+                    correct: correctIdx,
+                    explanation: exp.trim()
+                });
             }
-
-            // 3) W zależności od aktualnego stanu, doklejamy linię do
-            //    treści pytania, do ostatniej opcji albo do wyjaśnienia.
-            if (state === PARSE_STATE.QUESTION) {
-              questionText += line + "\n";
-            } else if (state === PARSE_STATE.OPTION && options.length > 0) {
-              const isMarkedCorrect = line.includes("**");
-              const cleanLine = line.replace(/\*+$/, "").replace(/^\*+/, "").trim();
-              const lastIndex = options.length - 1;
-
-              options[lastIndex] += " " + cleanLine;
-              if (isMarkedCorrect && !correctIndexes.includes(lastIndex)) {
-                correctIndexes.push(lastIndex);
-              }
-            } else if (state === PARSE_STATE.EXPLANATION) {
-              explanation += line + " ";
-            }
-          }
-
-          questionText = questionText.replace(/^\d+\)\s*/, "").trim();
-
-          if (options.length === 0) {
-            // Blok bez żadnej rozpoznanej opcji — najpewniej błąd formatowania
-            // w bazie pytań. Pomijamy go, ale ostrzegamy w konsoli, żeby było
-            // łatwo to znaleźć przy edycji <textarea id="quiz-data">.
-            console.warn(`Pytanie ${questionNumber}: nie znaleziono żadnych opcji odpowiedzi — blok zostanie zignorowany.`);
-            return;
-          }
-          if (correctIndexes.length !== 1) {
-            console.warn(
-              `Pytanie ${questionNumber}: oczekiwano dokładnie 1 poprawnej odpowiedzi (oznaczonej **), znaleziono ${correctIndexes.length}.`
-            );
-          }
-
-          questions.push({
-            question: questionText,
-            options: options,
-            correct: correctIndexes,
-            explanation: explanation.trim(),
-          });
         });
-
         return questions;
       }
 
-      /**
-       * Zamienia tekst pytania/odpowiedzi na bezpieczny HTML:
-       * ucieka znaki specjalne, a fragmenty w odwrotnych apostrofach
-       * (`tak`) zamienia na <code>tak</code>.
-       */
-      function formatCode(text) {
-        if (!text) return "";
-        const escapedText = text
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-        return escapedText.replace(/`([^`]+)`/g, "<code>$1</code>");
-      }
+      // Inicjalizacja pytań przy użyciu ukrytego elementu textarea
+      const rawData = document.getElementById("quiz-data").value;
+      const allQuestions = parseQuestions(rawData);
 
-      /* ================================================================
-         3. NARZĘDZIA POMOCNICZE
-         ================================================================ */
+      const totalQuestionsToAsk = 21;
 
-      /** Tasuje tablicę w miejscu (algorytm Fisher-Yates) i ją zwraca. */
-      function shuffle(array) {
-        let currentIndex = array.length;
-        while (currentIndex !== 0) {
-          const randomIndex = Math.floor(Math.random() * currentIndex);
-          currentIndex--;
-          [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-        }
-        return array;
-      }
-
-      /* ================================================================
-         4. STAN APLIKACJI
-         Baza wszystkich pytań jest parsowana raz, przy wczytaniu strony.
-         Pozostałe zmienne opisują aktualną sesję (losowy podzbiór pytań,
-         bieżący numer pytania, wynik, zaznaczone odpowiedzi).
-         ================================================================ */
-      const allQuestions = parseQuestions(dom.quizDataTextarea.value);
-      dom.totalQCount.innerText = allQuestions.length;
-      // Liczba pytań na sesję pochodzi z CONFIG — zmienia się tu, w jednym
-      // miejscu, i automatycznie aktualizuje tekst na ekranie startowym.
-      dom.sessionQCount.innerText = CONFIG.QUESTIONS_PER_SESSION;
+      document.getElementById("total-q-count").innerText = allQuestions.length;
 
       let currentSessionQuestions = [];
       let currentQuestionIndex = 0;
@@ -1312,150 +1009,160 @@ Uzasadnienie: Korzystanie ze stylów drastycznie ogranicza "puchnięcie" powtarz
       let selectedOptions = new Set();
       let isQuestionChecked = false;
 
-      /* ================================================================
-         5. LOGIKA EKRANÓW QUIZU
-         ================================================================ */
+      function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+          [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+      }
 
-      /** Startuje nową sesję: losuje pytania i pokazuje pierwsze z nich. */
+      document.getElementById("start-btn").addEventListener("click", startQuiz);
+      document.getElementById("check-btn").addEventListener("click", checkAnswer);
+      document.getElementById("next-btn").addEventListener("click", nextQuestion);
+      document.getElementById("restart-btn").addEventListener("click", startQuiz);
+
       function startQuiz() {
         score = 0;
         currentQuestionIndex = 0;
 
-        const shuffledAll = shuffle([...allQuestions]);
-        currentSessionQuestions = shuffledAll.slice(
-          0,
-          Math.min(CONFIG.QUESTIONS_PER_SESSION, allQuestions.length)
-        );
+        let shuffledAll = shuffle([...allQuestions]);
+        currentSessionQuestions = shuffledAll.slice(0, Math.min(totalQuestionsToAsk, allQuestions.length));
 
-        dom.startScreen.classList.add("hidden");
-        dom.resultScreen.classList.add("hidden");
-        dom.quizScreen.classList.remove("hidden");
+        document.getElementById("start-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.add("hidden");
+        document.getElementById("quiz-screen").classList.remove("hidden");
 
         showQuestion();
       }
 
-      /** Renderuje bieżące pytanie wraz z potasowanymi opcjami odpowiedzi. */
+      function formatCode(text) {
+        if (!text) return "";
+        let escapedText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return escapedText.replace(/`([^`]+)`/g, "<code>$1</code>");
+      }
+
       function showQuestion() {
         isQuestionChecked = false;
         selectedOptions.clear();
 
-        dom.checkBtn.classList.remove("hidden");
-        dom.checkBtn.disabled = true;
-        dom.checkBtn.innerText = "Sprawdź odpowiedź";
+        document.getElementById("check-btn").classList.remove("hidden");
+        document.getElementById("check-btn").disabled = true;
+        document.getElementById("check-btn").innerText = "Sprawdź odpowiedź";
 
-        dom.nextBtn.classList.add("hidden");
-        dom.nextBtn.innerText = "Następne pytanie";
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.add("hidden");
+        nextBtn.innerText = "Następne pytanie";
 
-        dom.feedbackMessage.className = "feedback";
-        dom.feedbackMessage.innerHTML = "";
+        const feedbackEl = document.getElementById("feedback-message");
+        feedbackEl.className = "feedback";
+        feedbackEl.innerHTML = "";
 
-        const currentQuestion = currentSessionQuestions[currentQuestionIndex];
+        const q = currentSessionQuestions[currentQuestionIndex];
 
         const progressPercent = (currentQuestionIndex / currentSessionQuestions.length) * 100;
-        dom.progressBar.style.width = progressPercent + "%";
-        dom.progressText.innerText = `${currentQuestionIndex + 1} / ${currentSessionQuestions.length}`;
+        document.getElementById("progress-bar").style.width = progressPercent + "%";
+        document.getElementById("progress-text").innerText = `${currentQuestionIndex + 1} / ${currentSessionQuestions.length}`;
 
-        dom.questionText.innerHTML = formatCode(currentQuestion.question);
+        document.getElementById("question-text").innerHTML = formatCode(q.question);
 
-        dom.optionsContainer.innerHTML = "";
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
 
-        // Tasujemy KOLEJNOŚĆ wyświetlania opcji, ale pamiętamy oryginalny
-        // indeks każdej z nich (originalIndex) — to po nim sprawdzamy
-        // poprawność odpowiedzi w checkAnswer().
-        let optionsWithIndex = currentQuestion.options.map((text, originalIndex) => ({
-          text,
-          originalIndex,
+        let optionsWithIndex = q.options.map((opt, index) => ({
+          text: opt,
+          originalIndex: index,
         }));
         optionsWithIndex = shuffle(optionsWithIndex);
 
-        optionsWithIndex.forEach((optionData) => {
-          const optionDiv = document.createElement("div");
-          optionDiv.className = "option";
-          optionDiv.dataset.originalIndex = optionData.originalIndex;
+        optionsWithIndex.forEach((optObj) => {
+          const optDiv = document.createElement("div");
+          optDiv.className = "option";
+          optDiv.dataset.originalIndex = optObj.originalIndex;
 
           const indicator = document.createElement("div");
           indicator.className = "checkbox-indicator";
-          optionDiv.appendChild(indicator);
+          optDiv.appendChild(indicator);
 
           const textSpan = document.createElement("span");
-          textSpan.innerHTML = formatCode(optionData.text);
-          optionDiv.appendChild(textSpan);
+          textSpan.innerHTML = formatCode(optObj.text);
+          optDiv.appendChild(textSpan);
 
-          optionDiv.addEventListener("click", function () {
+          optDiv.addEventListener("click", function () {
             if (isQuestionChecked) return;
 
-            // Pytania są jednokrotnego wyboru: zaznaczenie nowej opcji
-            // czyści poprzednie zaznaczenie.
+            // Logika WYŁĄCZNIE dla jednokrotnego wyboru
             selectedOptions.clear();
-            document.querySelectorAll(".option").forEach((el) => el.classList.remove("selected"));
-
-            selectedOptions.add(optionData.originalIndex);
+            document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            
+            selectedOptions.add(optObj.originalIndex);
             this.classList.add("selected");
 
-            dom.checkBtn.disabled = false;
+            document.getElementById("check-btn").disabled = false;
           });
 
-          dom.optionsContainer.appendChild(optionDiv);
+          optionsContainer.appendChild(optDiv);
         });
       }
 
-      /** Sprawdza zaznaczoną odpowiedź, koloruje opcje i pokazuje feedback. */
       function checkAnswer() {
         isQuestionChecked = true;
-        dom.checkBtn.classList.add("hidden");
-        dom.nextBtn.classList.remove("hidden");
+        document.getElementById("check-btn").classList.add("hidden");
+        document.getElementById("next-btn").classList.remove("hidden");
 
-        const currentQuestion = currentSessionQuestions[currentQuestionIndex];
-        const correctSet = new Set(currentQuestion.correct);
+        const q = currentSessionQuestions[currentQuestionIndex];
+        const correctSet = new Set(q.correct);
 
-        let isAnswerCorrect = selectedOptions.size === correctSet.size;
-        if (isAnswerCorrect) {
-          for (const selected of selectedOptions) {
+        let isPerfect = true;
+        if (selectedOptions.size !== correctSet.size) {
+          isPerfect = false;
+        } else {
+          for (let selected of selectedOptions) {
             if (!correctSet.has(selected)) {
-              isAnswerCorrect = false;
+              isPerfect = false;
               break;
             }
           }
         }
 
-        document.querySelectorAll(".option").forEach((optionDiv) => {
-          const originalIndex = parseInt(optionDiv.dataset.originalIndex, 10);
+        document.querySelectorAll(".option").forEach((optDiv) => {
+          const originalIndex = parseInt(optDiv.dataset.originalIndex);
           const isSelected = selectedOptions.has(originalIndex);
           const isActuallyCorrect = correctSet.has(originalIndex);
 
-          optionDiv.classList.remove("selected");
+          optDiv.classList.remove("selected");
 
           if (isActuallyCorrect) {
-            optionDiv.classList.add("correct-answer");
-          } else if (isSelected) {
-            optionDiv.classList.add("wrong-answer");
+            optDiv.classList.add("correct-answer");
+          } else if (isSelected && !isActuallyCorrect) {
+            optDiv.classList.add("wrong-answer");
           }
         });
 
-        if (isAnswerCorrect) {
+        const feedbackEl = document.getElementById("feedback-message");
+        if (isPerfect) {
           score++;
-          dom.feedbackMessage.innerHTML = "<strong>Świetnie! Poprawna odpowiedź.</strong>";
-          dom.feedbackMessage.classList.add("correct");
+          feedbackEl.innerHTML = "<strong>Świetnie! Poprawna odpowiedź.</strong>";
+          feedbackEl.classList.add("correct");
         } else {
-          dom.feedbackMessage.innerHTML =
-            "<strong>Niestety, to nie ta odpowiedź.</strong><br>Prawidłowa została zaznaczona na zielono.";
-          dom.feedbackMessage.classList.add("incorrect");
+          feedbackEl.innerHTML = "<strong>Niestety, to nie ta odpowiedź.</strong><br>Prawidłowa została zaznaczona na zielono.";
+          feedbackEl.classList.add("incorrect");
         }
 
-        if (currentQuestion.explanation) {
-          const explanationDiv = document.createElement("div");
-          explanationDiv.className = "explanation";
-          explanationDiv.innerHTML = "<strong>Uzasadnienie:</strong><br>" + formatCode(currentQuestion.explanation);
-          dom.feedbackMessage.appendChild(explanationDiv);
+        if (q.explanation && q.explanation.trim() !== "") {
+          const expDiv = document.createElement("div");
+          expDiv.className = "explanation";
+          expDiv.innerHTML = "<strong>Uzasadnienie:</strong><br>" + formatCode(q.explanation);
+          feedbackEl.appendChild(expDiv);
         }
 
-        const isLastQuestion = currentQuestionIndex === currentSessionQuestions.length - 1;
-        if (isLastQuestion) {
-          dom.nextBtn.innerText = "Zakończ i pokaż wynik";
+        if (currentQuestionIndex === currentSessionQuestions.length - 1) {
+          document.getElementById("next-btn").innerText = "Zakończ i pokaż wynik";
         }
       }
 
-      /** Przechodzi do kolejnego pytania albo, jeśli to było ostatnie, do wyniku. */
       function nextQuestion() {
         currentQuestionIndex++;
         if (currentQuestionIndex < currentSessionQuestions.length) {
@@ -1465,23 +1172,13 @@ Uzasadnienie: Korzystanie ze stylów drastycznie ogranicza "puchnięcie" powtarz
         }
       }
 
-      /** Pokazuje ekran podsumowania z wynikiem sesji. */
       function showResult() {
-        dom.quizScreen.classList.add("hidden");
-        dom.resultScreen.classList.remove("hidden");
+        document.getElementById("quiz-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.remove("hidden");
 
         const percentage = Math.round((score / currentSessionQuestions.length) * 100);
-        dom.score.innerText = `${score} / ${currentSessionQuestions.length} \n(${percentage}%)`;
+        document.getElementById("score").innerText = `${score} / ${currentSessionQuestions.length} \n(${percentage}%)`;
       }
-
-      /* ================================================================
-         6. PODŁĄCZENIE OBSŁUGI ZDARZEŃ (uruchamiane na końcu, po tym jak
-         wszystkie potrzebne funkcje są już zadeklarowane).
-         ================================================================ */
-      dom.startBtn.addEventListener("click", startQuiz);
-      dom.checkBtn.addEventListener("click", checkAnswer);
-      dom.nextBtn.addEventListener("click", nextQuestion);
-      dom.restartBtn.addEventListener("click", startQuiz);
     </script>
   </body>
 </html>
