@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz - Egzamin Android</title>
+    <style>
+      :root {
+        --primary: #007aff;
+        --primary-hover: #0056b3;
+        --success: #34c759;
+        --danger: #ff3b30;
+        --bg: #f2f2f7;
+        --card-bg: #ffffff;
+        --text: #1c1c1e;
+        --text-muted: #8e8e93;
+        --option-bg: #ffffff;
+        --option-border: #e5e5ea;
+        --option-hover: #f2f2f7;
+        --option-selected: #e5f1ff;
+        --option-selected-border: #007aff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --primary: #0a84ff;
+          --primary-hover: #006ee6;
+          --success: #32d74b;
+          --danger: #ff453a;
+          --bg: #000000;
+          --card-bg: #1c1c1e;
+          --text: #f2f2f7;
+          --text-muted: #aeaeb2;
+          --option-bg: #1c1c1e;
+          --option-border: #3a3a3c;
+          --option-hover: #2c2c2e;
+          --option-selected: #1a2a3a;
+          --option-selected-border: #0a84ff;
+        }
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .quiz-container {
+        background: var(--card-bg);
+        max-width: 800px;
+        width: 100%;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 40px;
+        box-sizing: border-box;
+      }
+      .hidden {
+        display: none !important;
+      }
+      h1 {
+        margin-top: 0;
+        color: var(--text);
+        font-size: 2.2em;
+        font-weight: 700;
+        margin-bottom: 16px;
+        letter-spacing: -0.02em;
+      }
+      .intro-text {
+        font-size: 1.15em;
+        color: var(--text-muted);
+        margin-bottom: 35px;
+        line-height: 1.6;
+      }
+      .progress {
+        font-size: 0.95em;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .progress-bar-container {
+        flex-grow: 1;
+        background: var(--option-border);
+        height: 8px;
+        border-radius: 4px;
+        margin-right: 20px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        height: 100%;
+        background: var(--primary);
+        width: 0%;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .question-box {
+        margin-bottom: 30px;
+      }
+      .question {
+        font-size: 1.3em;
+        font-weight: 600;
+        white-space: pre-wrap;
+        line-height: 1.4;
+        color: var(--text);
+      }
+      code {
+        background: var(--option-hover);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        color: #d50000;
+      }
+      @media (prefers-color-scheme: dark) {
+        code { color: #ff6b6b; }
+      }
+      .option {
+        display: flex;
+        align-items: center;
+        background: var(--option-bg);
+        margin: 12px 0;
+        padding: 16px 20px;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1.05em;
+        border: 2px solid var(--option-border);
+        line-height: 1.45;
+        white-space: pre-wrap;
+        color: var(--text);
+      }
+      .option:hover {
+        background: var(--option-hover);
+      }
+      .option.selected {
+        background: var(--option-selected);
+        border-color: var(--option-selected-border);
+      }
+      .option.correct-answer {
+        background: rgba(52, 199, 89, 0.15);
+        border-color: var(--success);
+      }
+      .option.wrong-answer {
+        background: rgba(255, 59, 48, 0.15);
+        border-color: var(--danger);
+        opacity: 0.8;
+      }
+      .checkbox-indicator {
+        width: 22px;
+        height: 22px;
+        border-radius: 11px; /* Zmienione na kółko dla jednokrotnego wyboru */
+        border: 2px solid var(--text-muted);
+        margin-right: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+        transition: all 0.2s;
+      }
+      .option.selected .checkbox-indicator {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+      .option.selected .checkbox-indicator::after {
+        content: "";
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+      }
+      .option.correct-answer .checkbox-indicator {
+        background: var(--success);
+        border-color: var(--success);
+      }
+      .option.correct-answer .checkbox-indicator::after {
+        content: "✓";
+        color: white;
+        background: transparent;
+        font-weight: bold;
+        font-size: 14px;
+      }
+      .option.wrong-answer .checkbox-indicator {
+        background: var(--danger);
+        border-color: var(--danger);
+      }
+      .option.wrong-answer .checkbox-indicator::after {
+        content: "✕";
+        color: white;
+        background: transparent;
+        font-weight: bold;
+        font-size: 14px;
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        padding: 18px 24px;
+        border-radius: 14px;
+        cursor: pointer;
+        font-size: 1.15em;
+        font-weight: 600;
+        margin-top: 30px;
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        background: var(--primary-hover);
+      }
+      .btn:disabled {
+        background: var(--text-muted);
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+      .feedback {
+        margin-top: 25px;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.05em;
+        display: none;
+        animation: fadeIn 0.3s ease;
+        line-height: 1.5;
+      }
+      .feedback.correct {
+        background: rgba(52, 199, 89, 0.15);
+        color: var(--success);
+        display: block;
+      }
+      .feedback.incorrect {
+        background: rgba(255, 59, 48, 0.15);
+        color: var(--danger);
+        display: block;
+      }
+      .explanation {
+        margin-top: 10px;
+        font-size: 0.95em;
+        font-weight: normal;
+        border-top: 1px solid rgba(128, 128, 128, 0.2);
+        padding-top: 10px;
+        color: var(--text);
+      }
+      .score-container {
+        text-align: center;
+      }
+      .score {
+        font-size: 4em;
+        font-weight: 800;
+        color: var(--primary);
+        margin: 20px 0;
+        letter-spacing: -0.02em;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @media (max-width: 600px) {
+        .quiz-container { padding: 25px 20px; }
+        h1 { font-size: 1.8em; }
+        .question { font-size: 1.15em; }
+        .option { font-size: 1em; padding: 14px 16px; }
+        .btn { padding: 16px 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="quiz-container" id="quiz-container">
+      <div id="start-screen">
+        <h1>Egzamin Android - Quiz</h1>
+        <p class="intro-text">
+          Baza pytań zaktualizowana. Wszystkie pytania traktowane są jako pytania <strong>jednokrotnego wyboru</strong>.<br /><br />
+          Z naszej puli <strong><span id="total-q-count"></span> pytań</strong> aplikacja losuje <strong>21 zagadnień</strong> na każdą sesję.
+        </p>
+        <button class="btn" id="start-btn">Rozpocznij Quiz</button>
+      </div>
+
+      <div id="quiz-screen" class="hidden">
+        <div class="progress">
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <span id="progress-text">1 / 21</span>
+        </div>
+
+        <div class="question-box">
+          <div class="question" id="question-text"></div>
+        </div>
+
+        <div id="options-container"></div>
+
+        <div id="feedback-message" class="feedback"></div>
+
+        <button class="btn" id="check-btn" disabled>Zaznacz odpowiedź, aby sprawdzić</button>
+        <button class="btn hidden" id="next-btn">Następne pytanie</button>
+      </div>
+
+      <div id="result-screen" class="hidden score-container">
+        <h1>Koniec Quizu!</h1>
+        <p class="intro-text">Oto Twój wynik z tej sesji:</p>
+        <div class="score" id="score"></div>
+        <button class="btn" id="restart-btn">Zagraj ponownie (nowe losowanie)</button>
+      </div>
+    </div>
+
+    <!-- Ukryty magazyn danych zabezpieczający surowy tekst przed rozsypaniem HTML-a -->
+    <textarea id="quiz-data" style="display: none;">
+1) Które stwierdzenie dotyczące odbiorców rozgłoszeń (broadcast receivers) jest fałszywe?
+a) umożliwiają przesyłanie informacji pomiędzy składnikami tej samej aplikacji
+**b) może działać dowolnie długo (jak usługa)**
+c) umożliwiają reagowanie na zdarzenia systemowe
+d) umożliwiają reagowanie na rozgłoszenia dowolnego typu (w tym samodzielnie utworzone)
+Uzasadnienie: "Odbiorca rozgłoszeń (a w zasadzie jego metoda onReceive()) powinien szybko zakończyć swoje działanie" (slajd 211)
+
+2) W aplikacji wspierającej wiele rodzajów urządzeń nie jest zalecane
+a) tworzenie elastycznych layoutów
+b) tworzenie alternatywnych layoutów
+**c) stosowanie rozmiarów elementów wyrażonych w "dp" zamiast wrap_content/match_parent/match_constraint**
+d) testowanie na ekranach o różnych proporcjach
+Uzasadnienie: "Preferowanie wartości wrap_content albo match_parent w przypadku wysokości/szerokości zamiast konkretnych wartości" (slajd 353)
+
+3) Standardowo do projektu w Android Studio nie jest dołączana biblioteka (biblioteki)
+a) rt.jar
+b) android.jar
+**c) jfx.jar**
+d) androidx
+Uzasadnienie: jfx.jar to biblioteka frameworka JavaFX, który nie jest obowiązkowy (wgl się go prawie wcale nie używa w androidzie). 
+
+4) Do modyfikacji ustawień współdzielonych w GUI można wykorzystać
+a) pochodną SettingsActivity
+**b) pochodną PreferenceFragmentCompat**
+c) ustawienia można modyfikować tylko w kodzie Java/Kotlin
+d) tylko standardową aktywność dziedziczącą po Activity
+Uzasadnienie: np. slajd 189 (klasa dziedziczy po PreferenceFragmentCompat)
+
+5) Klasą bazową wszystkich komponentów graficznych w Androidzie jest klasa:
+a) Component
+b) Control
+c) Widget
+**d) View**
+Uzasadnienie: https://developer.android.com/develop/ui/views/layout/custom-views/custom-components?hl=pl
+
+6) Które stwierdzenie dotyczące fragmentów nie jest prawdziwe?
+a) fragmenty są mini-aktywnościami, można umieścić ich kilka w jednej aktywności
+b) komunikacja między fragmentami powinna odbywać się za pośrednictwem aktywności
+**c) w aktywności może znajdować się tylko jeden fragment w danym momencie**
+d) zostały wprowadzone w Androidzie 3.0
+Uzasadnienie: Slajd 114 wszystko elegancko rozpisane
+
+7) Aby wyświetlić dane w komponencie RecyclerView należy
+a) ustawić źródło danych (ArrayList) w komponencie RecyclerView
+b) ustawić prezentera (RecyclerView) w źródle danych (ArrayList)
+**c) utworzyć adapter dziedziczący po RecyclerView.Adapter, ustawić źródło danych i ustawić adapter w prezenterze (RecyclerView)**
+d) utworzyć adapter dziedziczący po ArrayAdapter
+Uzasadnienie: Kod ze slajdów 101-102
+
+8) Stworzenie komponentu z własną metodą onDraw() i odświeżanie jego zawartości za pomocą metody invalidate() jest zalecane w przypadku tworzenia:
+a) płynnej animacji 2D
+b) płynnej animacji 3D
+c) rzadko aktualizowanej grafiki
+**d) interaktywnej animacji**
+Uzasadnienie: Slajd 320 (przynajmniej pośrednio)
+
+9) W aplikacji korzystającej z Room klasa encji (Entity)
+**a) łączy dane z wielu źródeł**
+b) opisuje pola rekordów
+c) reprezentuje bazę danych
+d) mapuje zapytania SQL na metody
+Uzasadnienie: Slajd 153
+
+10) Zarządcą układ we frameworku Android nie jest:
+a) FrameLayout
+**b) FixedLayout**
+c) LinearLayout
+d) TableLayout
+Uzasadnienie: Linear i Table to obvious, FrameLayout jest na Wear OS
+
+11) Style:
+a) istnieją tylko jako standardowe style wbudowane w Androida
+b) pozwalają na zdefiniowanie zestawów atrybutów i stosowanie ich do komponentów
+c) nie obsługują dziedziczenia
+**d) są definiowane w plikach css**
+Uzasadnienie: Slajdy 283-284, style w androidzie nie są definiowane w css (tylko xml)
+
+12) Środowiskiem uruchomieniowym (runtime) w Androidzie jest:
+a) CLR
+**b) android runtime (ART)**
+c) android API
+d) maszyna wirtualna dalvik
+Uzasadnienie: Slajd 9
+
+13) Klasa Handler służy do:
+a) obsługi przychodzących połączeń sieciowych
+b) obsługi zdarzeń interfejsu użytkownika
+c) zarządzania grupą wątków
+**d) wykonywania zadań w określonym (niekoniecznie głównym) wątku (do przekazywania zadań do wykonania między wątkami)**
+Uzasadnienie: "Klasa frameworku Androida, która rozwiązuje problem przesyłania danych między wątkami wykonującymi pewne zadania a wątkiem GUI" (slajd 198)
+
+14) W skład projektu aplikacji dla systemu Android wchodzą:
+**a) pliki źródłowe, pliki zasobów, biblioteki**
+b) tylko pliki źródłowe java/kotlin
+c) tylko pliki źródłowe stworzone przez programistę i pliki wygenerowane automatycznie (np. klasa R)
+d) tylko pliki źródłowe i pliki zasobów
+Uzasadnienie: Slajd 35
+
+15) We współczesnych wersjach Androida aby aplikacja mogła nawiązywać połączenia sieciowe należy
+a) zaimplementować żądanie dostępu do sieci w trakcie wykonania aplikacji
+**b) dodać uprawnienie INTERNET do manifestu aplikacji**
+c) dodać uprawnienie INTERNET do manifestu aplikacji i zaimplementować żądanie dostępu do sieci w trakcie wykonania aplikacji
+d) dostęp do Internetu mają wszystkie aplikacje
+Uzasadnienie: Slajd 245
+
+16) Który krok nie jest wymagany aby używać urządzenia z Androidem do testowania aplikacji
+a) uaktywnienie opcji programistycznych
+b) włączenie debugowania USB
+c) zainstalowanie sterowników urządzenia (Windows)/ zainstalowanie lub stworzenie pliku udev rules (Linux)
+**d) zezwolenie na wykorzystanie fizycznego urządzenia w Android Studio**
+Uzasadnienie: "Aby ADB mogło komunikować się z podłączonym konieczne są reguły tworzenia urządzeń w systemie plików udev", "Windows: Należy zainstalować sterowniki urządzenia" (slajd 28)
+
+17) Korzystanie z Firebase w aplikacji mobilnej nie wymaga
+a) stworzenia projektu w konsoli Firebase
+**b) włączenia Google Analitics**
+c) dodania aplikacji i pobrania konfiguracji w pliku json
+d) dodana zależności w plikach build.gradle
+Uzasadnienie: Slajdy 258 
+
+18) Które stwierdzenie na temat jednostki „dp” jest nieprawdziwe?
+a) rozwinięcie skrótu to device/denstity independent pixel
+b) 1 dp to jeden piksel na ekranie
+**c) 1 dp to pewna liczba pikseli zależna od gęstości pikseli na ekranie**
+d) pozwala na uzyskanie określonych rozmiarów elementów niezależnie od gęstości pikseli
+Uzasadnienie: Slajd 72 i https://stackoverflow.com/questions/2025282/what-is-the-difference-between-px-dip-dp-and-sp
+
+19) W Firebase wynikiem zapytania jest
+a) kursor
+**b) kolekcja obiektów QueryDocumentSnapshot**
+c) kolekcja map reprezentujących rekordy
+d) kolekcja map reprezentujących dokumenty
+Uzasadnienie: Slajd 272 💀💀💀
+
+20) Który opis elementy interfejsu systemu Wear OS jest niewłaściwy
+**a) nakładki – elementy wyświetlane nad innymi**
+b) komplikacja – element prezentujący informację, którą użytkownik będzie sprawdzał wiele razy dziennie
+c) powiadomienie – prezentuje ważne informacje, zapewnia akcje kontekstowe
+d) kafelek – zapewnia szybki dostęp do ważnych informacji / akcji
+Uzasadnienie: "nakładki (ang. overlay) – interaktywne przewijane listy" (slajd 364)
+
+21) Google dostarcza narzędzia do tworzenia aplikacji na Androida dla następujących systemów (wybierz odpowiedź uwzględniającą wszystkie systemy):
+a) Windows / Linux
+b) Windows / Linux / FreeBSD
+**c) Windows / Linux / MacOS / ChromeOS**
+d) Windows / MacOS
+Uzasadnienie: No tak było i nie zmyślam
+
+22) Ustawienia współdzielone
+a) umożliwiają przechowywanie ustawień wspólnych dla wszystkich aplikacji
+b) wymagają zapisywania i odczytywania danych w określonej kolejności
+c) umożliwiają tylko przechowywanie tekstów
+**d) umożliwiają przechowywanie ustawień wspólnych dla wszystkichelementów aplikacji**
+Uzasadnienie: "Ustawienia współdzielone dostępne są dla wszystkich elementów aplikacji" (slajd 183)
+
+23) Połączenie sieciowe standardowego emulatora Androida jest zrealizowane następująco:
+a) emulator jest widoczny w sieci jako osobne urządzenie w sieci
+**b) wszystkie działające emulatory połączone są do wspólnegowirtualnego routera**
+c) emulator jest dostępny pod adresem komputera
+d) każdy działający emulator jest podłączony do jego własnego wirtualnego routera
+Uzasadnienie: Slajd 231
+
+24) Na określenie rozmieszczenia elementów względem innych pozwala:strona wykładu
+**a) ConstraintLayout**
+b) LinearLayout
+c) TableLayout
+d) FrameLayout
+Uzasadnienie: To prawda
+
+25) Doodbierania rozgłoszeń (broadcasts) służy
+a) metodarecieveBroadcast()
+**b) klasa dziedzicząca po BroadcastReceiver**
+c) klasa dziedzicząca po AppBroadcastReceiver
+d) metodarecieveLocalBroadcast()
+Uzasadnienie: Slajd 212
+
+26) Które ze stwierdzeń dotyczących aktywności nie jest prawdziwe?
+a) stan aktywności można zachować/odtworzyć za pomocą metod onSaveInstanceState() / onRestoreInstanceState()
+b) stan aktywności można zachować/odtworzyć za pomocą metod onSaveInstanceState() / onCreate()
+**c) stan aktywności zachowywany jest automatycznie bez ingerencji programisty**
+d) standardowo aktywności są niszczone i tworzone na nowo przy zmianie konfiguracji
+Uzasadnienie: Slajd 82
+
+27) Metody związane z cyklem życia aplikacji są wykonywane w następującej kolejności:
+**a) onCreate(), onStart(), onResume(), onPause(), onStop(), onDestroy()**
+b) onCreate(), onResume(), onStart(), onStop(), onPause(), onDestroy()
+c) onCreate(), onStart(), onResume(), onStop(), onPause(), onDestroy()
+d) onCreate(), onStart(), onStop(), onDestroy()
+Uzasadnienie: Slajd 52
+
+29) W bieżących wersjach Androida
+a) aplikacja musi prosić o wszystkie uprawnienia w trakcie wykonania
+b) użytkownik zatwierdza wszystkie wymagane uprawnienia w momencie instalacji
+c) wystarczy umieścić wszystkie wymagane uprawnienia w manifeście i aplikacja automatycznie je otrzyma
+**d) aplikacja otrzymuje minimalny zestaw uprawnień ale musi prosić ododatkowe wtrakcie wykonania**
+Uzasadnienie: Slajd 15
+
+30) Do wykonywania zadań w tle w systemie Android nie można wykorzystać:
+a) standardowych wątków Javy
+**b) pochodnej klasy BackgroundTask**
+c) Klasy HandlerThread
+d) pochodnej klasy Service
+Uzasadnienie: Gemini
+
+31) We współczesnych wersjach Androida usługi:
+a) mogą działać bez ograniczeń
+b) mogą działać maksymalnie przez 5 minut
+**c) mogą działać dowolnie długo pod warunkiem, że są pierwszoplanowe**
+d) nie muszą wyświetlać powiadomień
+Uzasadnienie: Slajd 215
+
+32) Zależności aplikacji (dodatkowe biblioteki) określa się w pliku:
+a) AndroidManifest.xml
+**b) build.gradle**
+c) dependencies.gradle
+d) project properties
+Uzasadnienie: Prawda
+
+33) Lista stanów
+a) typ wyliczeniowy określający stany, w których może znajdować się komponent graiczny
+b) klasa określająca wygląd komponentu w zależności od jego stanu
+c) to plik XML, określający stany, w których może znajdować się, komponent graficzny
+**d) to plik XML, określający wygląd komponentu w zależności od jego stanu**
+Uzasadnienie: Slajd 170
+
+34) W bibliotece Retrofit klasa Retrofit
+a) nie korzysta ze wzorca budowniczego
+b) nie umożliwia ustawienie adresu usługi
+c) nie umożliwia ustawienie konwertera danych
+**d) nie realizuje samodzielnie wzorca singleton**
+Uzasadnienie: Slajd 249
+
+35) W aplikacji korzystającej z Room interfejs DAO
+a) łączy dane z wielu źródeł
+b) reprezentuje bazę danych
+c) opisuje pola rekordów
+**d)  mapuje zapytania SQL na metody**
+Uzasadnienie: Slajd 144
+
+36) Ustawienia obsługiwane przez AndroidXPreference Library mogą być przechowywane w 
+a) bazie SQLite i pliku tekstowym w formacie XML   
+**b) SharedPreferences i PreferenceDataStore**
+c) usłudze REST   
+d) pliku tekstowym w formacie JSON
+Uzasadnienie: Slajd 183
+
+37) W bibliotece Retrofit w klasie Call metoda enqueue(): 
+a) wykonuje żądania natychmiast w głównym wątku aplikacji   
+b) kolejkuje żądanie do wykonania w głównym wątku aplikacji   
+c) asynchronicznie wykonuje zadanie w głównym wątku   
+**d) asynchronicznie wykonuje zadania w dodatkowym wątku**
+Uzasadnienie: ChatGPT
+
+38) Opcje na pasku aplikacji: 
+a) tworzy się w metodzie onCreateAppBarMenu() a obsługuje w onAppBarItemSelected() 
+b) tworzy się w metodzie onCreateOptionsMenu() a obsługuje w onAppBarltemSelected()
+**c) tworzy się w metodzie onCreateOptionsMenu() a obsługuje w onOptionsItemSelected()**
+d) tworzy się w metodzie onCreateAppBarMenu() a obsługuje w onOptionsItemSelected()
+Uzasadnienie: Slajdy 111-112
+
+39) W Androidzie: (strona wykałdu: 15)   
+a) każda aplikacja musi być podpisana kluczem stratyfikowanego wystawcy 
+**b) każda aplikacja musi być podpisana**
+c) każda aplikacja musi być sumę kontrolną MD5 
+d) aplikacje nie muszą być podpisane
+Uzasadnienie: "Podpisywanie aplikacji – każda instalowana na urządzeniu aplikacja musi być podpisana. Pozwala to na identyfikowanie autora aplikacji" slajd 15
+
+40) Które stwierdzenie na temat ustawień współdzielonych nie jest prawdziwe? (strona wykałdu: 183, copilot)   
+a) możliwe jest reagowanie na zmianę konkretnego ustawienia
+b) możliwe jest reagowanie na zmianę wszystkich ustawień
+c) możliwe jest ustawienie wartości domyślnych ustawień zawsze uwzględnianych w kodzie Java/Kotlin
+**d) możliwe jest tworzenie zależności między ustawieniami**
+Uzasadnienie: Slajd 183, ChatGPT
+
+41) Które stwierdzenie na temat grafiki nie jest prawdziwe?
+a) klasa Bitmap stanowi pojemnik na piksele   
+b) klasa Canvas zawiera metody rysujące   
+c) klasa Paint określa kolor i styl rysowanych elementów   
+**d) klasa Brush określa sposób wypełniania elementów**
+Uzasadnienie: Slajd 321
+
+42) Do obsługi rozgłoszeń nie jest konieczne:
+a) zarejestrowanie odbiorcy   
+b) wyrejestrowanie odbiorcy   
+c) użycie klasy BroadcastReceiver   
+**d) uruchomienie wątku klasy Handler Thread**
+Uzasadnienie: Slajd 211
+
+43) Polecenie adb nie umożliwia (copilot adb - polecenie w konsoli)
+a) instalowania aplikacji
+**b) dostępu do GUI Androida**
+c) wyświetlanie logów
+d) kopiowanie plików
+Uzasadnienie: Slajd 31
+
+44) Który element nie jest konieczny przy tworzeniu usługi pierwszoplanowej: 
+a) umieszczenie uprawnienia FOREGROUD_SERVICE w manifeście   
+b) utworzenie powiadomienia   
+**c) poproszenie użytkownika nadanie uprawnienia w trakcie wykonania aplikacji**
+d) wywołanie metody startForegroud() w usłudze
+Uzasadnienie: Slajdy 215-220
+
+45) Klasą bazową dla pojemników (m.in. layoutów) jest klasa:   
+a) Layout   
+b) LayoutBase   
+c) WidgetGroup   
+**d) ViewGroup**
+Uzasadnienie: Slajd 53
+
+46) Które ze stwierdzeń dotyczących usług (pochodząc z klasy Service) nie jest prawdziwe:
+a) domyślnie klasy pochodne nie uruchamiają własnych wątków
+b) umożliwiają wykonywanie zadań w tle nawet gdy aplikacja nie jest widoczna na ekranie
+**c) służą do wykonywania krótkotrwałych działań**
+d) mogą pracować na rzecz innych aplikacji
+Uzasadnienie: Slajd 209
+
+47) Zadaniem kernela stosowanego w Androidzie nie jest:
+a) zarządzanie pamięcią
+b) obsługa systemu plików
+**c) zarządzanie aktywnościami**
+d) zarządzanie procesami
+Uzasadnienie: Slajd 10
+
+48) Stworzenie pochodnej SurfaceView i użycie wątku odświeżającego rysunek jest zalecane w przypadku tworzenia:
+a) niestandardowo wyglądających komponentów
+b) tworzenia komponentu odświeżanego w ramach systemowej hierarchii widoków
+c) rzadko aktualizowanej grafiki
+**d) płynnej animacji**
+Uzasadnienie: Slajd 320
+
+49) Do wysyłania rozgłoszeń (broadcasts) służy:
+a) metoda sentLocal Broadcast()
+b) klasa AppBroadcastManager
+c) klasa AppBroadcastSender
+**d) metoda sendBroadcast()**
+Uzasadnienie: ChatGPT
+
+50) Zadaniem obiektu ViewHolder jest:
+a) utworzenie wiersza listy
+b) przechowywanie danych wyświetlanych na liście
+**c) przechowywanie referencji do widoków (komponentów) w wierszu**
+d) obsługa zdarzeń komponentu RecyclerView
+Uzasadnienie: Slajd 96 "Elementy listy/siatki reprezentowane są przez pojemnik na widoki (RecyclerView.ViewHolder)" 
+
+51) Klasa R zawiera:
+a) identyfikatory tekstowe komponentów graficznych (widoków)
+**b) identyfikatory liczbowe rozmaitych składników aplikacji (komponentów graficznych, napisów, layoutów, menu...)**
+c) tylko identyfikatory liczbowe komponentów graficznych (widoków)
+d) tylko identyfikatory plików XML
+Uzasadnienie: Slajd 74
+
+52) W aplikacjach dla Androida style:
+a) tworzy się w pliku XML, którego głównym elementem jest element <style>
+**b) tworzy się w pliku XML, którego głównym elementem jest element <resources>**
+c) tworzy się w pliku XML, zawierającym layout aktywności
+d) tworzy się za pomocą klasy w kodzie Java
+Uzasadnienie: Slajd 282
+
+53) Które stwierdzenie na temat obiektu pochodnego ViewModel nie jest prawdziwe:
+a) przechowuje dane wyświetlane w widoku
+b) jego czas życia jest dłuższy niż aktywności
+c) można uzyskać do niego dostęp za pomocą obiektu ViewModelProvider
+**d) jest komponentem prezentującym dane**
+Uzasadnienie: ChatGPT, na logikę i np. slajd 158
+
+54) Do rozmieszczania elementów w jednym wierszu lub w jednej kolumnie służy:
+a) FixedLayout
+**b) LinearLayout**
+c) RelativeLayout
+d) TableLayout
+Uzasadnienie: Slajd 55
+
+55) Obsługi zdarzeń w Androidzie nie realizuje się za pomocą:
+a) rejestrowania obiektów słuchaczy, wyrażeń lambda lub referencji do metod
+b) ustawiania w komponencie wskaźnika do funkcji obsługującej zdarzenie
+c) definiowania atrybutu android:onClick w pliku XML
+**d) zastępowania metody obsługującej zdarzenie w klasie pochodnej**
+Uzasadnienie: Slajd 75
+
+56) W Firebase za uwierzytelnianie użytkownika odpowiada klasa:
+a) FirePass
+**b) FirebaseAuth**
+c) Firebase Check
+d) Firebase PasswordAuth
+Uzasadnienie: Slajd 265 (w kodzie to FirebaseAuth, ale w prezentacji jest też jako Fireauth)
+
+57) Bazą danych wbudowaną w system Android jest:
+a) MySQL
+b) PostgreSQL
+c) SQL Server Express
+**d) SQLite**
+Uzasadnienie: Slajd 11
+
+58) Typem usługi w Androidzie nie jest usługa:
+**a) kolejkująca (queuing)**
+b) związana (bounded)
+c) niezwiązana (unbounded)
+d) pierwszoplanowa (foreground)
+Uzasadnienie: Gemini i Chat
+
+59) W bibliotece Retrofit interfejs Api:
+**a) zapewnia mapowanie punktów końcowych (ang. endpoints) na metody**
+b) realizuje wzorzec singleton
+c) wymaga zaimplementowania przez programistę w klasie Api
+d) nie umożliwia określenia zawartości nagłówków
+Uzasadnienie: Gemini
+
+60) Zależności aplikacji (dodatkowe biblioteki) określa się w pliku:
+a) AndroidManifest.xml
+**b) build.gradle**
+c) dependencies.gradle
+d) project.properties
+Uzasadnienie: Slajd 34
+
+61) Które ze stwierdzeń na temat odtwarzacza MediaPlayer jest fałszywe?
+a) odtwarzacz może znajdować się w jednym z wielu stanów i należy wywoływać tylko metody dozwolone w danym stanie
+b) obsługiwane są media strumieniowe
+**c) wszystkie metody odtwarzacza mogą być wywołane niezależnie od stanu w jakim się on znajduje (bez zgłaszania wyjątku)**
+d) obsługiwane są media identyfikowane za pomocą URI
+Uzasadnienie: Slajd 305, wyjątek OnPreparedListener
+
+62) Które ze stwierdzeń na temat aplikacji dla Android TV nie są prawdziwe?
+a) powinna być przystosowana do sterowania pilotem
+b) powinna deklarować, że nie wymaga ekranu dotykowego
+c) mieć aktywność z kategorią LEANBACK_LAUNCHER
+**d) musi deklarować, że wymaga launchera Leanback**
+Uzasadnienie: Slajd 357-358, wymaga to za dużo powiedziane bo może mieć atrybut ustawiony na true (nie będzie działać na innych urządzeniach) albo false
+
+63) W warstwie bibliotek nie znajduje się:
+**a) zarządca aktywności**
+b) baza danych
+c) obsługa ssl
+d) silnik renderowania stron
+Uzasadnienie: Zarządca aktywności (Activity Manager) to element wyższej warstwy, czyli frameworku aplikacji (Application Framework), a nie natywnych bibliotek C/C++
+
+64) We współczesnych wersjach Androida usługi:
+a) mogą działać bez ograniczeń
+b) mogą działać maksymalnie przez 5 minut
+**c) mogą działać dowolnie długo pod warunkiem, że są pierwszoplanowe**
+d) nie muszą wyświetlać powiadomień
+Uzasadnienie: Od Androida 8 (API 26) system rygorystycznie "ubija" usługi w tle celem oszczędzania baterii, chyba że podniesiesz je do rangi widocznej dla użytkownika usługi pierwszoplanowej (Foreground Service)
+
+65) Które stwierdzenie na temat stylów nie jest prawdziwe?
+a) styl dziedziczy po stylu, którego nazwa jest określona w atrybucie parent
+b) styl dziedziczy po stylu, którego nazwa jest przed kropką w atrybucie name
+**c) styl dziedziczy po stylu, którego nazwa jest przed ukośnikiem w atrybucie name**
+d) styl można zastosować jako motyw (ang. theme)
+Uzasadnienie: Dziedziczenie stylów zapisuje się za pomocą osobnego atrybutu parent lub notacji z kropką (np. Theme.AppCompat.Light), a nie z wykorzystaniem znaku ukośnika.
+
+66) Do obsługi zaznaczania elementów na liście RecyclerView nie służy:
+**a) pochodna MultiChoiceModelListener**
+b) pochodna ItemKeyProvider
+c) pochodna ItemDetails Lookup
+d) klasa Selection Tracker
+Uzasadnienie: MultiChoiceModeListener to przestarzały interfejs z dawnego ListView, podczas gdy w nowoczesnym RecyclerView używa się biblioteki recyclerview-selection opartej m.in. na SelectionTracker
+
+67) Graficzny interfejs użytkownika w Androidzie można stworzyć:
+a) tylko wykorzystując kod Java/Kotlin
+b) tylko wykorzystując pliki XML
+c) zarówno w kodzie jak i za pomocą plików XAML
+**d) zarówno w kodzie Java/Kotlin jak i za pomocą plików XML**
+Uzasadnienie: Klasyczny interfejs Androida można zadeklarować statycznie w plikach XML lub budować/modyfikować go w pełni dynamicznie z poziomu kodu obiektowego.
+
+68) Które stwierdzenie na temat kwalifikatorów zasobów w projekcie aplikacji dla Androida jest nieprawdziwe?
+a) pozwalają na oznaczenie elementów graficznych przeznaczonych dla określonych gestości pikseli
+b) pozwalają na oznaczenie zbiorów tekstów przeznaczonych dla określonych języków
+c) pozwalają na oznaczenie układów elementów przeznaczonych dla określonych rozmiarów ekranów
+**d) wymagają uwzględnienia w kodzie Java**
+Uzasadnienie: Kwalifikatory (np. foldery values-pl, drawable-hdpi) są obsługiwane przez system operacyjny automatycznie w locie, przez co programista nie musi przejmować się pisaniem dla nich instrukcji warunkowych w kodzie.
+
+69) Które ze stwierdzeń dotyczących klasy SurfaceView jest prawdziwe?
+a) jej użycie wymaga zdefiniowania metody onDraw()
+b) nie umożliwia wyświetlania nakładek (overlays)
+**c) zapewnia powierzchnię do rysowania**
+d) jest przeznaczona do wyświetlania grafiki z użyciem OpenGL
+Uzasadnienie: SurfaceView dostarcza własną, dedykowaną płaszczyznę renderowania wewnątrz hierarchii widoków, z której można korzystać z osobnego wątku (co świetnie sprawdza się w grach 2D lub przy odtwarzaniu wideo).
+
+70) Którego hiperviziora nie wykorzystuje standardowy emulator systemu Android?
+a) Kernel-based Virtual Machine
+**b) Virtual Box**
+c) Android Emulator Hypervisor Driver for AMD Processors
+d) Windows Hypervisor Platform
+Uzasadnienie: Slajd 21
+
+71) Który element nie jest konieczny przy tworzeniu usługi pierwszoplanowej:
+a) umieszczenie uprawnienia FOREGROUND_SERVICE w manifeście
+**b) poproszenie użytkownika o nadanie uprawnienia w trakcie wykonywania aplikacji**
+c) utworzenie powiadomienia
+d) wywołanie metody startForeground() w usłudze
+Uzasadnienie: Uprawnienie FOREGROUND_SERVICE jest uprawnieniem typu "normal", więc wystarczy jedynie wpisać je w pliku XML manifestu bez wywoływania specjalnych, wyskakujących okienek dla użytkownika podczas działania programu.
+
+72) Aktywności nie można uruchomić za pomocą:
+**a) metody startActivity(intencja)**
+b) metody launch(intencja) 
+c) metody executeActivity(nazwaAktywności)
+d) metody startActivityForResult(intencja)
+Uzasadnienie: We frameworku systemu Android po prostu nie istnieje metoda o nazwie executeActivity().
+
+73) Hierarchia stosowania atrybutów jest we właściwej kolejności: (od najbardziej szczegółowego/nadpisującego do najogólniejszego)
+a) atrybuty z motywów zastosowane do większych grup widoków, atrybuty określone programowo, atrybuty ze stylów zastosowanych do widoku, atrybuty z motywów zastosowane do konkretnego widoku
+b) atrybuty ze stylów zastosowanych do widoku, atrybuty określone programowo, atrybuty ze stylów zastosowanych do większych grup widoków, atrybuty określone programowo
+**c) atrybuty określone programowo, atrybuty zastosowane do konkretnego widoku (wXML), atrybuty ze stylów zastosowanych do widoku, atrybuty z motywów zastosowane do większych grup widoków**
+d) atrybuty zastosowane do konkretnego widoku, atrybuty określone programowo, atrybuty ze stylów zastosowanych do widoku, atrybuty z motywów zastosowane do większych grup widoków
+Uzasadnienie: Jest to poprawna, naturalna kolejność dziedziczenia w Androidzie – od wstrzykiwanych najsłabiej motywów całego okna, aż po najmocniejsze deklaracje narzucone "na sztywno" z poziomu kodu programu.
+
+74) Ustawienie targetSdk w pliku build.gradle oznacza:
+a) minimalną wersję Androida (API Level) wymaganą przez aplikację
+b) SDK wykorzystywane do skompilowania projektu
+**c) wersję Androida (API Level), której uwzględnia aplikacja**
+d) SDK, do którego autor dostosuje aplikację w przyszłości
+Uzasadnienie: Jest to deklaracja dla systemu operacyjnego, że programista sprawdził i dostosował swoją aplikację do najnowszych mechanizmów obostrzeń lub zachowań systemu z danej wersji API.
+
+75) W aplikacji korzystającej z Room klasa repozytorium:
+a) reprezentuje bazę danych
+**b) łączy dane z wielu źródeł**
+c) opisuje pola rekordów
+d) mapuje zapytania SQL na metody
+Uzasadnienie: Zgodnie z oficjalną architekturą Androida, wzorzec Repozytorium pośredniczy pomiędzy różnymi źródłami danych (np. wyciągając dane z sieciowym API lub z lokalnej bazy Room i wystawiając je gotowe dla ViewModelu).
+
+76) W Firebase za dostęp do bazy danych (np. Firestore) odpowiada klasa:
+**a) Firebase Firestore (dla Firestore) lub FirebaseDatabase (dla Realtime Database)**
+b) Firebase
+c) Firestore
+d) FirebaseCloudDb
+Uzasadnienie: SDK rozróżnia poszczególne rozwiązania poprzez konkretne instancje – obiekty FirebaseFirestore kierują ruch do bazy dokumentowej, natomiast FirebaseDatabase do starszej, synchronizującej chmury noSQL.
+
+77) Ustawienia współdzielone (SharedPreferences):
+**a) umożliwiają przechowywanie ustawień współnych dla wszystkich aplikacji**
+b) wymagają zapisywania i odczytywania danych w określonej kolejności
+c) umożliwiają przechowywanie ustawień współnych dla wszystkich elementów aplikacji
+d) umożliwiają tylko przechowywanie tekstów
+Uzasadnienie: Ten prosty w użyciu mechanizm mapy klucz-wartość pozwala na natychmiastowe odczytanie globalnych preferencji użytkownika w obrębie dowolnej aktywności czy fragmentu danej aplikacji.
+
+78) Atrybut, którego postaci nie występują w standardowych layoutach (jako powszechna forma dla standardowych komponentów Androida):
+a) android:własność="wartość"
+b) tools:właściwość="wartość"
+c) app:właściwość="wartość"
+**d) właściwość="wartość"**
+Uzasadnienie: Tradycyjne środowisko plików XML Androida restrykcyjnie wymaga prefiksów (zazwyczaj android: lub app:) deklarujących, z jakiego schematu nazw pochodzi modyfikowana właściwość. 
+
+79) Do wykonywania zadań w tle w systemie Android nie można wykorzystać:
+**a) pochodnej klasy Background Task**
+b) standardowych wątków Java
+c) klasy Handler Thread
+d) pochodnej klasy Service
+Uzasadnienie: Taka klasa w architekturze standardowego Androida nie istnieje (do operacji w tle używa się np. starych AsyncTasks, usług, korutyn lub narzędzia WorkManager).
+
+80) Z czego składa się Android Debug Bridge?
+a) polecenia adb
+**b) klienta (polecenie adb na komputerze), serwera (na komputerze) i demona (na urządzeniu z Androidem)**
+c) klienta (polecenie adb na komputerze) i serwera (na urządzeniu z Androidem)
+d) klienta (polecenie adb na komputerze) i demona (na komputerze)
+Uzasadnienie: Slajd 30
+
+81) Do obsługi rozgłoszeń nie jest konieczne:
+a) zarejestrowanie odbiorcy
+b) użycie klasy BroadcastReceiver
+c) uruchomienie wątku klasy Handler Thread
+**d) użycie metod onCreate(), onReceive()**
+Uzasadnienie: Podstawowym punktem wejścia dla obiektu BroadcastReceiver jest metoda onReceive() i komponent ten z natury w ogóle nie implementuje ani nie wywołuje metody onCreate().
+
+82) Klasy rozmiaru okna, które należy uwzględnić tworząc aplikację dla Androida to:
+a) telefon / tablet / TV
+b) watch / phone / tablet
+c) portrait / landscape
+**d) kompaktowa / średnia / rozszerzona**
+Uzasadnienie: Slajd 351
+
+83) W systemie Android można wyróżnić następujące warstwy:
+**a) kernel / biblioteki / framework aplikacji / aplikacje**
+b) core os / core services / warstwy multimediów / cocoa touch
+c) core system / mobile core / phone shell
+d) kernel / biblioteki / framework aplikacji / app launcher
+Uzasadnienie: Slajd 9
+
+84) W bibliotece Retrofit w klasie Call metoda enqueue():
+a) wykonuje zadanie natychmiast w głównym wątku aplikacji
+**b) asynchronicznie wykonuje zadanie w dodatkowym wątku**
+c) kolejkuje zadanie do wykonania w głównym wątku aplikacji
+d) asynchronicznie wykonuje zadanie w głównym wątku
+Uzasadnienie: Retrofit sam dba o przeniesienie pobierania danych za pomocą enqueue() do osobnego wątku (work thread) w tle, aby zapytanie sieciowe nie spowodowało zamrożenia Twojego interfejsu (ANR).
+
+85) Jednostka specjalnie przewidziana do określania rozmiaru tekstu jest:
+a) mm
+b) px
+c) dp
+**d) sp**
+Uzasadnienie: Skrót "scale-independent pixels" to jednostka wymiaru, która oprócz gęstości fizycznej matrycy ekranu bierze pod uwagę również globalne, powiększone w systemie preferencje skalowania czcionek ustawione przez samego użytkownika.
+
+86) We współczesnych wersjach Androida:
+a) można używać tylko połączeń https
+b) można używać połączeń http i https bez dodatkowych czynności
+c) można używać połączeń https pod warunkiem dodania certyfikatu serwera do manifestu aplikacji
+**d) można używać połączeń https, jak również http (pod warunkiem określenia wyjątku w pliku security_config.xml)**
+Uzasadnienie: Android domyślnie blokuje podatny na ataki ruch po niezaszyfrowanym http od wersji API 28 i wymusza na programistach jawną deklarację wyjątków (CleartextTraffic) w manifeście dla każdego docelowego serwera niezabezpieczonego SSL-em.
+
+87) Firebase Firestore to:
+a) relacyjna baza danych działająca w chmurze
+b) relacyjna baza danych działająca na urządzeniu mobilnym
+**c) dokumentowa baza danych działająca w chmurze**
+d) dokumentowa baza danych działająca na urządzeniu mobilnym
+Uzasadnienie: Firestore nie opiera się na tabelach typowych baz SQL, tylko przechowuje bezszablonowe dane w formie kolekcji elastycznych dokumentów chmurowych, zapewniających natychmiastową synchronizację dla wszystkich połączonych klientów na bieżąco.
+
+88) Które stwierdzenie na temat ustawień współdzielonych nie jest prawdziwe?
+a) możliwe jest ustawienie wartości domyślnych ustawień zawsze uwzględnianych w kodzie Java/Kotlin
+b) możliwe jest reagowanie na zmianę konkretnego ustawienia
+c) możliwe jest reagowanie na zmianę wszystkich ustawień
+**d) możliwe jest tworzenie zależności między ustawieniami**
+Uzasadnienie: Slajd 183
+
+89) Klasa Handler:
+a) może służyć do tworzenia grup wątków
+b) może służyć do tworzenia pojedynczych wątków
+**c) może służyć do okresowego wykonywania krótkich zadań**
+d) umożliwia tylko dodawanie zadań do kolejki w celu jak najszybszego wykonania
+Uzasadnienie: Interfejs tej klasy pozwala na wywoływanie bloków kodu z opóźnieniem (np. za pomocą postDelayed()), co sprawdza się genialnie do budowania szybkich, cyklicznych timerów obsługujących odświeżanie logiki aplikacji.
+
+90) Opis aplikacji przeznaczonej dla Androida zawiera:
+a) plik manifestu w formacie JSON
+**b) plik manifestu w formacie XML**
+c) plik project.properties
+d) plik android.app
+Uzasadnienie: Serce konfiguracyjne projektu mieści się w pliku AndroidManifest.xml, który zawiera fundamentalne zapisy dotyczące nazwy pakietu, wykorzystywanych komponentów, filtrowanych intencji i zapotrzebowań systemowych danego programu.
+
+91) Który opis elementy interfejsu systemu Wear OS jest niewłaściwy:
+a) komplikacja - element prezentujący informacje, którą użytkownik będzie sprawdzał wiele razy dziennie
+b) powiadomienie - prezentuje ważne informacje, zapewnia akcje kontekstowe
+c) kafelek - zapewnia szybki dostęp do ważnych informacji / akcji
+**d) nakładki - elementy wyświetlane nad innymi**
+Uzasadnienie: Nakładki (ang. overlay) – interaktywne przewijane listy (slajd 364)
+
+92) W bieżących wersjach Androida:
+**a) aplikacja otrzymuje minimalny zestaw uprawnień ale musi prosić o dodatkowe w trakcie wykonania**
+b) aplikacja musi prosić o wszystkie uprawnienia w trakcie wykonania
+c) użytkownik zatwierdza wszystkie wymagane uprawnienia w momencie instalacji
+d) wystarczy umieścić wszystkie wymagane uprawnienia w manifeście i aplikacja automatycznie je otrzyma
+Uzasadnienie: Android rozgranicza uprawnienia w podziale na te normalne (nadawane odgórnie już z manifestu) oraz te "niebezpieczne" (Runtime Permissions), o które musisz poprosić wyświetlając użytkownikowi odpowiedni "popup" kiedy aplikacja użyje np. mikrofonu.
+
+93) W skład projektu aplikacji dla systemu Android wchodzą:
+**a) pliki źródłowe, pliki zasobów, biblioteki**
+b) tylko pliki źródłowe i pliki zasobów
+c) tylko pliki źródłowe Java/Kotlin
+d) tylko pliki źródłowe stworzone przez programistę i pliki wygenerowane automatycznie (np. klasa R)
+Uzasadnienie: Pełen zestaw środowiskowy potrzebny do wygenerowania paczki instalacyjnej (APK/AAB) zawsze zakłada obecność kodu imperatywnego, zasobów deklaratywnych i pobranych zależności.
+
+94) Przycisk ElevatedButton można zdezaktywować
+a) ustawiając parametr onPressed konstruktora na pustą funkcję () {}
+b) ustawiając parametr disabled konstruktora na true
+**c) ustawiając parametr onPressed konstruktora na null**
+d) ustawiając parametr enabled konstruktora na false
+Uzasadnienie: Przekazanie wartości null jako metody na zdarzenie w środowisku Fluttera automatycznie, natychmiastowo wyszarza ten przycisk bez potrzeby używania oddzielnych flag stanów.
+
+95) Do reagowania na zdarzenia takie jak naciśnięcie, przesunięcie czy zwolnienie służy
+a) Mouse Region
+**b) GestureDetector**
+c) Listener
+d) MouseDetector
+Uzasadnienie: Jest to niewidzialny widget Fluttera nasłuchujący konkretnego rodzaju fizycznych interakcji z nałożonym niżej w drzewie dzieckiem graficznym, wspierający obsługę nie tylko stuknięć, ale również m.in "swipe-ów" czy podwójnych naciśnięć.
+
+96) Szablonem aplikacji Material Design jest
+**a) Scaffold**
+b) Template
+c) MaterialScaffold
+d) FlutterApp
+Uzasadnienie: Widżet Scaffold z biblioteki material służy jako gotowe rusztowanie ekranu, zapewniając domyślne kotwice pod pasek górny, pole główne czy dolne paski nawigacyjne w oparciu o wytyczne Google.
+
+97) Korzystanie z Firebase w aplikacji mobilnej nie wymaga
+a) dodania aplikacji i pobrania konfiguracji w pliku json
+b) stworzenia projektu w konsoli Firebase
+**c) włączenia Google Analytics**
+d) dodania zależności w plikach build.gradle
+Uzasadnienie: Podłączenie modułu statystyk ułatwia śledzenie demografii, natomiast system ten jest rozwiązaniem opcjonalnym, odseparowanym od fundamentu bazy i nie blokuje dostępu np. do uwierzytelniania w backendzie.
+
+98) Do przebudowania interfejsu aplikacji w momencie pojawienia się wartości w przyszłości służy
+**a) klasa FutureBuilder**
+b) metoda whenReady()
+c) klasa FutureListene
+d) metoda rebuildUI()
+Uzasadnienie: Flutterowy FutureBuilder potrafi w pełni samodzielnie podglądać nadaną mu operację asynchroniczną i dostarczać na żywo adekwatne stany ładowania, obsługi błędów oraz renderować UI przy ostatecznym rozwiązaniu żądania.
+
+99) Klasa Platform nie pozwala na sprawdzenie
+a) nazwy komputera
+b) wartości zmiennych środowiskowych
+**c) właściwości okna aplikacji**
+d) systemu operacyjnego
+Uzasadnienie: Interfejs Platform w Dart pozwala na rozpoznawanie np. wersji jądra pod spodem, z kolei badanie właściwości stricte ekranowych opiera się już na silniku interfejsu poprzez zbadanie np. elementu MediaQuery.
+
+100) Uzyskanie informacji o standardowych ścieżkach przechowywania plików umożliwiabiblioteka
+a) path_environment
+b) file_locations
+**c) path_provider**
+d) default_dirs
+Uzasadnienie: Jest to kluczowy pakiet Fluttera, który standaryzuje różniące się systemy folderów obu systemów (iOS oraz Android) odnajdując właściwe linki np. do katalogów danych tymczasowych.
+
+101) Style:
+a) istnieją tylko jako standardowe style wbudowane w Androida
+**b) pozwalają na zdefiniowanie zestawów atrybutów i stosowanie ich do komponentów**
+c) nie obsługują dziedziczenia
+d) są definiowane w plikach css
+Uzasadnienie: Korzystanie ze stylów drastycznie ogranicza "puchnięcie" powtarzalnego kodu źródłowego w XML, centralizując wybrane cechy czcionek czy marginesów w jednym, generycznym tagu.
+</textarea>
+
+    <script>
+      function parseQuestions(rawText) {
+        const cleanText = "\n" + rawText.trim();
+        const blocks = cleanText.split(/\n\s*(?=\d+\))/);
+        const questions = [];
+
+        blocks.forEach(block => {
+            if (!block.trim()) return;
+            const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let qText = "";
+            let opts = [];
+            let exp = "";
+            let correctIdx = [];
+            let state = "q";
+
+            for (let line of lines) {
+                if (line.toLowerCase().startsWith("uzasadnienie:")) {
+                    state = "exp";
+                    exp += line.substring(13).trim() + " ";
+                    continue;
+                }
+                const optMatch = line.match(/^\s*(?:\*\*)*([a-d])\)/);
+                if (optMatch && state !== "exp") {
+                    state = "opt";
+                    const isCorrect = line.includes('**');
+                    let cleanLine = line.replace(/^\s*(?:\*\*)*[a-d]\)\s*/, '').replace(/\*+$/, '').trim();
+                    if (isCorrect) correctIdx.push(opts.length);
+                    opts.push(cleanLine);
+                    continue;
+                }
+                if (state === "q") {
+                    qText += line + "\n";
+                } else if (state === "opt") {
+                    if (opts.length > 0) {
+                        let isCorrect = line.includes('**');
+                        let cleanLine = line.replace(/\*+$/, '').replace(/^\*+/, '').trim();
+                        opts[opts.length - 1] += " " + cleanLine;
+                        if (isCorrect && !correctIdx.includes(opts.length - 1)) correctIdx.push(opts.length - 1);
+                    }
+                } else if (state === "exp") {
+                    exp += line + " ";
+                }
+            }
+            qText = qText.replace(/^\d+\)\s*/, '').trim();
+            if (opts.length > 0) {
+                questions.push({
+                    question: qText,
+                    options: opts,
+                    correct: correctIdx,
+                    explanation: exp.trim()
+                });
+            }
+        });
+        return questions;
+      }
+
+      // Inicjalizacja pytań przy użyciu ukrytego elementu textarea
+      const rawData = document.getElementById("quiz-data").value;
+      const allQuestions = parseQuestions(rawData);
+
+      const totalQuestionsToAsk = 21;
+
+      document.getElementById("total-q-count").innerText = allQuestions.length;
+
+      let currentSessionQuestions = [];
+      let currentQuestionIndex = 0;
+      let score = 0;
+      let selectedOptions = new Set();
+      let isQuestionChecked = false;
+
+      function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+          [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+      }
+
+      document.getElementById("start-btn").addEventListener("click", startQuiz);
+      document.getElementById("check-btn").addEventListener("click", checkAnswer);
+      document.getElementById("next-btn").addEventListener("click", nextQuestion);
+      document.getElementById("restart-btn").addEventListener("click", startQuiz);
+
+      function startQuiz() {
+        score = 0;
+        currentQuestionIndex = 0;
+
+        let shuffledAll = shuffle([...allQuestions]);
+        currentSessionQuestions = shuffledAll.slice(0, Math.min(totalQuestionsToAsk, allQuestions.length));
+
+        document.getElementById("start-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.add("hidden");
+        document.getElementById("quiz-screen").classList.remove("hidden");
+
+        showQuestion();
+      }
+
+      function formatCode(text) {
+        if (!text) return "";
+        let escapedText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return escapedText.replace(/`([^`]+)`/g, "<code>$1</code>");
+      }
+
+      function showQuestion() {
+        isQuestionChecked = false;
+        selectedOptions.clear();
+
+        document.getElementById("check-btn").classList.remove("hidden");
+        document.getElementById("check-btn").disabled = true;
+        document.getElementById("check-btn").innerText = "Sprawdź odpowiedź";
+
+        const nextBtn = document.getElementById("next-btn");
+        nextBtn.classList.add("hidden");
+        nextBtn.innerText = "Następne pytanie";
+
+        const feedbackEl = document.getElementById("feedback-message");
+        feedbackEl.className = "feedback";
+        feedbackEl.innerHTML = "";
+
+        const q = currentSessionQuestions[currentQuestionIndex];
+
+        const progressPercent = (currentQuestionIndex / currentSessionQuestions.length) * 100;
+        document.getElementById("progress-bar").style.width = progressPercent + "%";
+        document.getElementById("progress-text").innerText = `${currentQuestionIndex + 1} / ${currentSessionQuestions.length}`;
+
+        document.getElementById("question-text").innerHTML = formatCode(q.question);
+
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
+
+        let optionsWithIndex = q.options.map((opt, index) => ({
+          text: opt,
+          originalIndex: index,
+        }));
+        optionsWithIndex = shuffle(optionsWithIndex);
+
+        optionsWithIndex.forEach((optObj) => {
+          const optDiv = document.createElement("div");
+          optDiv.className = "option";
+          optDiv.dataset.originalIndex = optObj.originalIndex;
+
+          const indicator = document.createElement("div");
+          indicator.className = "checkbox-indicator";
+          optDiv.appendChild(indicator);
+
+          const textSpan = document.createElement("span");
+          textSpan.innerHTML = formatCode(optObj.text);
+          optDiv.appendChild(textSpan);
+
+          optDiv.addEventListener("click", function () {
+            if (isQuestionChecked) return;
+
+            // Logika WYŁĄCZNIE dla jednokrotnego wyboru
+            selectedOptions.clear();
+            document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            
+            selectedOptions.add(optObj.originalIndex);
+            this.classList.add("selected");
+
+            document.getElementById("check-btn").disabled = false;
+          });
+
+          optionsContainer.appendChild(optDiv);
+        });
+      }
+
+      function checkAnswer() {
+        isQuestionChecked = true;
+        document.getElementById("check-btn").classList.add("hidden");
+        document.getElementById("next-btn").classList.remove("hidden");
+
+        const q = currentSessionQuestions[currentQuestionIndex];
+        const correctSet = new Set(q.correct);
+
+        let isPerfect = true;
+        if (selectedOptions.size !== correctSet.size) {
+          isPerfect = false;
+        } else {
+          for (let selected of selectedOptions) {
+            if (!correctSet.has(selected)) {
+              isPerfect = false;
+              break;
+            }
+          }
+        }
+
+        document.querySelectorAll(".option").forEach((optDiv) => {
+          const originalIndex = parseInt(optDiv.dataset.originalIndex);
+          const isSelected = selectedOptions.has(originalIndex);
+          const isActuallyCorrect = correctSet.has(originalIndex);
+
+          optDiv.classList.remove("selected");
+
+          if (isActuallyCorrect) {
+            optDiv.classList.add("correct-answer");
+          } else if (isSelected && !isActuallyCorrect) {
+            optDiv.classList.add("wrong-answer");
+          }
+        });
+
+        const feedbackEl = document.getElementById("feedback-message");
+        if (isPerfect) {
+          score++;
+          feedbackEl.innerHTML = "<strong>Świetnie! Poprawna odpowiedź.</strong>";
+          feedbackEl.classList.add("correct");
+        } else {
+          feedbackEl.innerHTML = "<strong>Niestety, to nie ta odpowiedź.</strong><br>Prawidłowa została zaznaczona na zielono.";
+          feedbackEl.classList.add("incorrect");
+        }
+
+        if (q.explanation && q.explanation.trim() !== "") {
+          const expDiv = document.createElement("div");
+          expDiv.className = "explanation";
+          expDiv.innerHTML = "<strong>Uzasadnienie:</strong><br>" + formatCode(q.explanation);
+          feedbackEl.appendChild(expDiv);
+        }
+
+        if (currentQuestionIndex === currentSessionQuestions.length - 1) {
+          document.getElementById("next-btn").innerText = "Zakończ i pokaż wynik";
+        }
+      }
+
+      function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentSessionQuestions.length) {
+          showQuestion();
+        } else {
+          showResult();
+        }
+      }
+
+      function showResult() {
+        document.getElementById("quiz-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.remove("hidden");
+
+        const percentage = Math.round((score / currentSessionQuestions.length) * 100);
+        document.getElementById("score").innerText = `${score} / ${currentSessionQuestions.length} \n(${percentage}%)`;
+      }
+    </script>
+  </body>
+</html>
