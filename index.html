@@ -1,10 +1,42 @@
 <!doctype html>
 <html lang="pl">
+  <!--
+    ================================================================
+    EGZAMIN ANDROID — QUIZ (jeden plik: HTML + CSS + dane + JS)
+    ================================================================
+    Struktura tego pliku (żeby łatwo się po nim poruszać):
+
+      1. <head><style>   CSS, podzielony na ponumerowane sekcje
+                         (zmienne kolorów, layout, opcje, przyciski...)
+
+      2. <body>          Markup trzech "ekranów" (pokazywanych/skrywanych
+                         klasą .hidden): start-screen / quiz-screen /
+                         result-screen.
+
+      3. <textarea id="quiz-data">
+                         Baza pytań jako czysty tekst — to TUTAJ dodajesz,
+                         usuwasz i edytujesz pytania. Dokładny format opisany
+                         jest w komentarzu nad funkcją parseQuestions()
+                         w sekcji <script> poniżej.
+
+      4. <script>        Cała logika aplikacji: parsowanie bazy pytań,
+                         stan quizu, renderowanie ekranów. Podzielona na
+                         ponumerowane sekcje (CONFIG, DOM, parsowanie,
+                         narzędzia, stan, logika ekranów, zdarzenia).
+    ================================================================
+  -->
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz - Egzamin Android</title>
     <style>
+
+      /* ============================================================
+         1. ZMIENNE KOLORÓW — JASNY / CIEMNY MOTYW
+         Wszystkie kolory w aplikacji są zdefiniowane tutaj jako zmienne
+         CSS. Żeby zmienić paletę kolorów całego quizu, edytuj TYLKO
+         wartości w tym jednym miejscu (+ blok @media poniżej dla dark mode).
+         ============================================================ */
       :root {
         --primary: #007aff;
         --primary-hover: #0056b3;
@@ -36,7 +68,14 @@
           --option-selected: #1a2a3a;
           --option-selected-border: #0a84ff;
         }
+        code {
+          color: #ff6b6b;
+        }
       }
+
+      /* ============================================================
+         2. RESET I LAYOUT BAZOWY (strona + karta z quizem)
+         ============================================================ */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         background-color: var(--bg);
@@ -61,6 +100,10 @@
       .hidden {
         display: none !important;
       }
+
+      /* ============================================================
+         3. EKRAN STARTOWY / NAGŁÓWKI
+         ============================================================ */
       h1 {
         margin-top: 0;
         color: var(--text);
@@ -75,6 +118,10 @@
         margin-bottom: 35px;
         line-height: 1.6;
       }
+
+      /* ============================================================
+         4. PASEK POSTĘPU (progress bar)
+         ============================================================ */
       .progress {
         font-size: 0.95em;
         font-weight: 600;
@@ -98,6 +145,10 @@
         width: 0%;
         transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
+
+      /* ============================================================
+         5. TREŚĆ PYTANIA (+ styl dla fragmentów kodu `jak ten`)
+         ============================================================ */
       .question-box {
         margin-bottom: 30px;
       }
@@ -115,9 +166,10 @@
         font-family: monospace;
         color: #d50000;
       }
-      @media (prefers-color-scheme: dark) {
-        code { color: #ff6b6b; }
-      }
+
+      /* ============================================================
+         6. OPCJE ODPOWIEDZI (stany: domyślny / wybrany / poprawny / błędny)
+         ============================================================ */
       .option {
         display: flex;
         align-items: center;
@@ -149,6 +201,10 @@
         border-color: var(--danger);
         opacity: 0.8;
       }
+
+      /* ------------------------------------------------------------
+         6a. Wskaźnik wyboru (kółko radiowe) wewnątrz każdej opcji
+         ------------------------------------------------------------ */
       .checkbox-indicator {
         width: 22px;
         height: 22px;
@@ -194,6 +250,10 @@
         font-weight: bold;
         font-size: 14px;
       }
+
+      /* ============================================================
+         7. PRZYCISKI AKCJI (Start / Sprawdź / Następne / Restart)
+         ============================================================ */
       .btn {
         display: block;
         width: 100%;
@@ -216,6 +276,10 @@
         cursor: not-allowed;
         opacity: 0.5;
       }
+
+      /* ============================================================
+         8. KOMUNIKAT ZWROTNY PO SPRAWDZENIU ODPOWIEDZI + UZASADNIENIE
+         ============================================================ */
       .feedback {
         margin-top: 25px;
         padding: 16px;
@@ -244,6 +308,10 @@
         padding-top: 10px;
         color: var(--text);
       }
+
+      /* ============================================================
+         9. EKRAN WYNIKU KOŃCOWEGO
+         ============================================================ */
       .score-container {
         text-align: center;
       }
@@ -254,10 +322,18 @@
         margin: 20px 0;
         letter-spacing: -0.02em;
       }
+
+      /* ============================================================
+         10. ANIMACJE
+         ============================================================ */
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
       }
+
+      /* ============================================================
+         11. RESPONSYWNOŚĆ (telefony / wąskie ekrany)
+         ============================================================ */
       @media (max-width: 600px) {
         .quiz-container { padding: 25px 20px; }
         h1 { font-size: 1.8em; }
@@ -273,7 +349,7 @@
         <h1>Egzamin Android - Quiz</h1>
         <p class="intro-text">
           Baza pytań zaktualizowana. Wszystkie pytania traktowane są jako pytania <strong>jednokrotnego wyboru</strong>.<br /><br />
-          Z naszej puli <strong><span id="total-q-count"></span> pytań</strong> aplikacja losuje <strong>21 zagadnień</strong> na każdą sesję.
+          Z naszej puli <strong><span id="total-q-count"></span> pytań</strong> aplikacja losuje <strong><span id="session-q-count"></span> zagadnień</strong> na każdą sesję.
         </p>
         <button class="btn" id="start-btn">Rozpocznij Quiz</button>
       </div>
@@ -306,7 +382,13 @@
       </div>
     </div>
 
-    <!-- Ukryty magazyn danych zabezpieczający surowy tekst przed rozsypaniem HTML-a -->
+    <!--
+      Ukryty magazyn danych: surowy tekst bazy pytań.
+      Format pojedynczego pytania opisany jest w komentarzu nad funkcją
+      parseQuestions() w sekcji <script> poniżej. W skrócie: "N) treść",
+      potem opcje "a) ... b) ... **c) poprawna** ... d) ...",
+      opcjonalnie linia "Uzasadnienie: ...".
+    -->
     <textarea id="quiz-data" style="display: none;">
 1) Które stwierdzenie dotyczące odbiorców rozgłoszeń (broadcast receivers) jest fałszywe?
 a) umożliwiają przesyłanie informacji pomiędzy składnikami tej samej aplikacji
@@ -1010,68 +1092,219 @@ Uzasadnienie: Korzystanie ze stylów drastycznie ogranicza "puchnięcie" powtarz
 </textarea>
 
     <script>
+      /* ================================================================
+         KONFIGURACJA
+         Jedyne miejsce, które trzeba zmienić, żeby dostosować zasady quizu
+         (np. liczbę pytań losowanych do jednej sesji).
+         ================================================================ */
+      const CONFIG = {
+        QUESTIONS_PER_SESSION: 21,
+      };
+
+      /* ================================================================
+         1. REFERENCJE DO ELEMENTÓW DOM
+         Wszystkie elementy pobierane są raz, przy starcie, i trzymane
+         w jednym obiekcie `dom`. Dzięki temu nie szukamy tych samych
+         elementów po ID wielokrotnie w każdej funkcji.
+         ================================================================ */
+      const dom = {
+        startScreen: document.getElementById("start-screen"),
+        quizScreen: document.getElementById("quiz-screen"),
+        resultScreen: document.getElementById("result-screen"),
+
+        startBtn: document.getElementById("start-btn"),
+        checkBtn: document.getElementById("check-btn"),
+        nextBtn: document.getElementById("next-btn"),
+        restartBtn: document.getElementById("restart-btn"),
+
+        totalQCount: document.getElementById("total-q-count"),
+        sessionQCount: document.getElementById("session-q-count"),
+        progressBar: document.getElementById("progress-bar"),
+        progressText: document.getElementById("progress-text"),
+        questionText: document.getElementById("question-text"),
+        optionsContainer: document.getElementById("options-container"),
+        feedbackMessage: document.getElementById("feedback-message"),
+        score: document.getElementById("score"),
+
+        quizDataTextarea: document.getElementById("quiz-data"),
+      };
+
+      /* ================================================================
+         2. PARSOWANIE BAZY PYTAŃ
+         ----------------------------------------------------------------
+         Pytania są przechowywane jako zwykły tekst w ukrytym elemencie
+         <textarea id="quiz-data"> (patrz w HTML, kawałek wyżej). Format
+         pojedynczego pytania wygląda tak:
+
+           N) Treść pytania (może zajmować kilka linii)
+           a) pierwsza odpowiedź
+           **b) poprawna odpowiedź (otoczona gwiazdkami ** na początku
+                i/lub końcu linii)**
+           c) kolejna odpowiedź
+           d) kolejna odpowiedź
+           Uzasadnienie: opcjonalny komentarz/wyjaśnienie (może się
+             rozciągać na kilka linii, parser dokleja je do siebie)
+
+         Zasady:
+           - "N)" zaczyna nowe pytanie. Numeracja może mieć przerwy
+             (np. po usunięciu pytania) — nie ma to wpływu na działanie
+             aplikacji, numery służą wyłącznie czytelności notatek.
+           - Każda opcja zaczyna się od litery a–d) na początku linii.
+           - Poprawną odpowiedź oznacza się gwiazdkami ** wokół litery
+             i/lub treści. Parser obsługuje też odpowiedzi rozbite na
+             kilka linii (dalsze linie są doklejane do ostatniej opcji,
+             aż natrafi na kolejną opcję/Uzasadnienie/nowe pytanie).
+           - Linia zaczynająca się od "Uzasadnienie:" (wielkość liter
+             nieistotna) przełącza w tryb wyjaśnienia.
+           - Logika obsługuje teoretycznie więcej niż jedną poprawną
+             odpowiedź na pytanie, ale obecny interfejs jest jednokrotnego
+             wyboru (patrz funkcja showQuestion) — każda pozycja w bazie
+             powinna mieć oznaczoną dokładnie jedną poprawną odpowiedź.
+         ================================================================ */
+
+      // Nazwane stałe stanu automatu parsującego (czytelniejsze niż "q"/"opt"/"exp")
+      const PARSE_STATE = {
+        QUESTION: "question",
+        OPTION: "option",
+        EXPLANATION: "explanation",
+      };
+
+      /**
+       * Zamienia surowy tekst z <textarea id="quiz-data"> na tablicę obiektów:
+       *   { question, options, correct, explanation }
+       * gdzie `correct` to tablica indeksów poprawnych opcji w `options`.
+       */
       function parseQuestions(rawText) {
         const cleanText = "\n" + rawText.trim();
+        // Dzielimy tekst na blok dla każdego pytania — granicą jest linia
+        // zaczynająca się od liczby i nawiasu, np. "12)".
         const blocks = cleanText.split(/\n\s*(?=\d+\))/);
         const questions = [];
 
-        blocks.forEach(block => {
-            if (!block.trim()) return;
-            const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            let qText = "";
-            let opts = [];
-            let exp = "";
-            let correctIdx = [];
-            let state = "q";
+        blocks.forEach((block) => {
+          if (!block.trim()) return;
 
-            for (let line of lines) {
-                if (line.toLowerCase().startsWith("uzasadnienie:")) {
-                    state = "exp";
-                    exp += line.substring(13).trim() + " ";
-                    continue;
-                }
-                const optMatch = line.match(/^\s*(?:\*\*)*([a-d])\)/);
-                if (optMatch && state !== "exp") {
-                    state = "opt";
-                    const isCorrect = line.includes('**');
-                    let cleanLine = line.replace(/^\s*(?:\*\*)*[a-d]\)\s*/, '').replace(/\*+$/, '').trim();
-                    if (isCorrect) correctIdx.push(opts.length);
-                    opts.push(cleanLine);
-                    continue;
-                }
-                if (state === "q") {
-                    qText += line + "\n";
-                } else if (state === "opt") {
-                    if (opts.length > 0) {
-                        let isCorrect = line.includes('**');
-                        let cleanLine = line.replace(/\*+$/, '').replace(/^\*+/, '').trim();
-                        opts[opts.length - 1] += " " + cleanLine;
-                        if (isCorrect && !correctIdx.includes(opts.length - 1)) correctIdx.push(opts.length - 1);
-                    }
-                } else if (state === "exp") {
-                    exp += line + " ";
-                }
+          const lines = block
+            .split("\n")
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+
+          const questionNumberMatch = block.trim().match(/^(\d+)\)/);
+          const questionNumber = questionNumberMatch ? questionNumberMatch[1] : "?";
+
+          let questionText = "";
+          let options = [];
+          let explanation = "";
+          let correctIndexes = [];
+          let state = PARSE_STATE.QUESTION;
+
+          for (const line of lines) {
+            // 1) Linia "Uzasadnienie: ..." — przełącza w tryb wyjaśnienia.
+            if (line.toLowerCase().startsWith("uzasadnienie:")) {
+              state = PARSE_STATE.EXPLANATION;
+              explanation += line.substring("uzasadnienie:".length).trim() + " ";
+              continue;
             }
-            qText = qText.replace(/^\d+\)\s*/, '').trim();
-            if (opts.length > 0) {
-                questions.push({
-                    question: qText,
-                    options: opts,
-                    correct: correctIdx,
-                    explanation: exp.trim()
-                });
+
+            // 2) Linia zaczynająca nową opcję odpowiedzi: "a)", "**b)", itd.
+            const optionMatch = line.match(/^\s*(?:\*\*)*([a-d])\)/);
+            if (optionMatch && state !== PARSE_STATE.EXPLANATION) {
+              state = PARSE_STATE.OPTION;
+              const isMarkedCorrect = line.includes("**");
+              const cleanLine = line
+                .replace(/^\s*(?:\*\*)*[a-d]\)\s*/, "")
+                .replace(/\*+$/, "")
+                .trim();
+
+              if (isMarkedCorrect) correctIndexes.push(options.length);
+              options.push(cleanLine);
+              continue;
             }
+
+            // 3) W zależności od aktualnego stanu, doklejamy linię do
+            //    treści pytania, do ostatniej opcji albo do wyjaśnienia.
+            if (state === PARSE_STATE.QUESTION) {
+              questionText += line + "\n";
+            } else if (state === PARSE_STATE.OPTION && options.length > 0) {
+              const isMarkedCorrect = line.includes("**");
+              const cleanLine = line.replace(/\*+$/, "").replace(/^\*+/, "").trim();
+              const lastIndex = options.length - 1;
+
+              options[lastIndex] += " " + cleanLine;
+              if (isMarkedCorrect && !correctIndexes.includes(lastIndex)) {
+                correctIndexes.push(lastIndex);
+              }
+            } else if (state === PARSE_STATE.EXPLANATION) {
+              explanation += line + " ";
+            }
+          }
+
+          questionText = questionText.replace(/^\d+\)\s*/, "").trim();
+
+          if (options.length === 0) {
+            // Blok bez żadnej rozpoznanej opcji — najpewniej błąd formatowania
+            // w bazie pytań. Pomijamy go, ale ostrzegamy w konsoli, żeby było
+            // łatwo to znaleźć przy edycji <textarea id="quiz-data">.
+            console.warn(`Pytanie ${questionNumber}: nie znaleziono żadnych opcji odpowiedzi — blok zostanie zignorowany.`);
+            return;
+          }
+          if (correctIndexes.length !== 1) {
+            console.warn(
+              `Pytanie ${questionNumber}: oczekiwano dokładnie 1 poprawnej odpowiedzi (oznaczonej **), znaleziono ${correctIndexes.length}.`
+            );
+          }
+
+          questions.push({
+            question: questionText,
+            options: options,
+            correct: correctIndexes,
+            explanation: explanation.trim(),
+          });
         });
+
         return questions;
       }
 
-      // Inicjalizacja pytań przy użyciu ukrytego elementu textarea
-      const rawData = document.getElementById("quiz-data").value;
-      const allQuestions = parseQuestions(rawData);
+      /**
+       * Zamienia tekst pytania/odpowiedzi na bezpieczny HTML:
+       * ucieka znaki specjalne, a fragmenty w odwrotnych apostrofach
+       * (`tak`) zamienia na <code>tak</code>.
+       */
+      function formatCode(text) {
+        if (!text) return "";
+        const escapedText = text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+        return escapedText.replace(/`([^`]+)`/g, "<code>$1</code>");
+      }
 
-      const totalQuestionsToAsk = 21;
+      /* ================================================================
+         3. NARZĘDZIA POMOCNICZE
+         ================================================================ */
 
-      document.getElementById("total-q-count").innerText = allQuestions.length;
+      /** Tasuje tablicę w miejscu (algorytm Fisher-Yates) i ją zwraca. */
+      function shuffle(array) {
+        let currentIndex = array.length;
+        while (currentIndex !== 0) {
+          const randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex--;
+          [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+      }
+
+      /* ================================================================
+         4. STAN APLIKACJI
+         Baza wszystkich pytań jest parsowana raz, przy wczytaniu strony.
+         Pozostałe zmienne opisują aktualną sesję (losowy podzbiór pytań,
+         bieżący numer pytania, wynik, zaznaczone odpowiedzi).
+         ================================================================ */
+      const allQuestions = parseQuestions(dom.quizDataTextarea.value);
+      dom.totalQCount.innerText = allQuestions.length;
+      // Liczba pytań na sesję pochodzi z CONFIG — zmienia się tu, w jednym
+      // miejscu, i automatycznie aktualizuje tekst na ekranie startowym.
+      dom.sessionQCount.innerText = CONFIG.QUESTIONS_PER_SESSION;
 
       let currentSessionQuestions = [];
       let currentQuestionIndex = 0;
@@ -1079,160 +1312,150 @@ Uzasadnienie: Korzystanie ze stylów drastycznie ogranicza "puchnięcie" powtarz
       let selectedOptions = new Set();
       let isQuestionChecked = false;
 
-      function shuffle(array) {
-        let currentIndex = array.length, randomIndex;
-        while (currentIndex != 0) {
-          randomIndex = Math.floor(Math.random() * currentIndex);
-          currentIndex--;
-          [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-        }
-        return array;
-      }
+      /* ================================================================
+         5. LOGIKA EKRANÓW QUIZU
+         ================================================================ */
 
-      document.getElementById("start-btn").addEventListener("click", startQuiz);
-      document.getElementById("check-btn").addEventListener("click", checkAnswer);
-      document.getElementById("next-btn").addEventListener("click", nextQuestion);
-      document.getElementById("restart-btn").addEventListener("click", startQuiz);
-
+      /** Startuje nową sesję: losuje pytania i pokazuje pierwsze z nich. */
       function startQuiz() {
         score = 0;
         currentQuestionIndex = 0;
 
-        let shuffledAll = shuffle([...allQuestions]);
-        currentSessionQuestions = shuffledAll.slice(0, Math.min(totalQuestionsToAsk, allQuestions.length));
+        const shuffledAll = shuffle([...allQuestions]);
+        currentSessionQuestions = shuffledAll.slice(
+          0,
+          Math.min(CONFIG.QUESTIONS_PER_SESSION, allQuestions.length)
+        );
 
-        document.getElementById("start-screen").classList.add("hidden");
-        document.getElementById("result-screen").classList.add("hidden");
-        document.getElementById("quiz-screen").classList.remove("hidden");
+        dom.startScreen.classList.add("hidden");
+        dom.resultScreen.classList.add("hidden");
+        dom.quizScreen.classList.remove("hidden");
 
         showQuestion();
       }
 
-      function formatCode(text) {
-        if (!text) return "";
-        let escapedText = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        return escapedText.replace(/`([^`]+)`/g, "<code>$1</code>");
-      }
-
+      /** Renderuje bieżące pytanie wraz z potasowanymi opcjami odpowiedzi. */
       function showQuestion() {
         isQuestionChecked = false;
         selectedOptions.clear();
 
-        document.getElementById("check-btn").classList.remove("hidden");
-        document.getElementById("check-btn").disabled = true;
-        document.getElementById("check-btn").innerText = "Sprawdź odpowiedź";
+        dom.checkBtn.classList.remove("hidden");
+        dom.checkBtn.disabled = true;
+        dom.checkBtn.innerText = "Sprawdź odpowiedź";
 
-        const nextBtn = document.getElementById("next-btn");
-        nextBtn.classList.add("hidden");
-        nextBtn.innerText = "Następne pytanie";
+        dom.nextBtn.classList.add("hidden");
+        dom.nextBtn.innerText = "Następne pytanie";
 
-        const feedbackEl = document.getElementById("feedback-message");
-        feedbackEl.className = "feedback";
-        feedbackEl.innerHTML = "";
+        dom.feedbackMessage.className = "feedback";
+        dom.feedbackMessage.innerHTML = "";
 
-        const q = currentSessionQuestions[currentQuestionIndex];
+        const currentQuestion = currentSessionQuestions[currentQuestionIndex];
 
         const progressPercent = (currentQuestionIndex / currentSessionQuestions.length) * 100;
-        document.getElementById("progress-bar").style.width = progressPercent + "%";
-        document.getElementById("progress-text").innerText = `${currentQuestionIndex + 1} / ${currentSessionQuestions.length}`;
+        dom.progressBar.style.width = progressPercent + "%";
+        dom.progressText.innerText = `${currentQuestionIndex + 1} / ${currentSessionQuestions.length}`;
 
-        document.getElementById("question-text").innerHTML = formatCode(q.question);
+        dom.questionText.innerHTML = formatCode(currentQuestion.question);
 
-        const optionsContainer = document.getElementById("options-container");
-        optionsContainer.innerHTML = "";
+        dom.optionsContainer.innerHTML = "";
 
-        let optionsWithIndex = q.options.map((opt, index) => ({
-          text: opt,
-          originalIndex: index,
+        // Tasujemy KOLEJNOŚĆ wyświetlania opcji, ale pamiętamy oryginalny
+        // indeks każdej z nich (originalIndex) — to po nim sprawdzamy
+        // poprawność odpowiedzi w checkAnswer().
+        let optionsWithIndex = currentQuestion.options.map((text, originalIndex) => ({
+          text,
+          originalIndex,
         }));
         optionsWithIndex = shuffle(optionsWithIndex);
 
-        optionsWithIndex.forEach((optObj) => {
-          const optDiv = document.createElement("div");
-          optDiv.className = "option";
-          optDiv.dataset.originalIndex = optObj.originalIndex;
+        optionsWithIndex.forEach((optionData) => {
+          const optionDiv = document.createElement("div");
+          optionDiv.className = "option";
+          optionDiv.dataset.originalIndex = optionData.originalIndex;
 
           const indicator = document.createElement("div");
           indicator.className = "checkbox-indicator";
-          optDiv.appendChild(indicator);
+          optionDiv.appendChild(indicator);
 
           const textSpan = document.createElement("span");
-          textSpan.innerHTML = formatCode(optObj.text);
-          optDiv.appendChild(textSpan);
+          textSpan.innerHTML = formatCode(optionData.text);
+          optionDiv.appendChild(textSpan);
 
-          optDiv.addEventListener("click", function () {
+          optionDiv.addEventListener("click", function () {
             if (isQuestionChecked) return;
 
-            // Logika WYŁĄCZNIE dla jednokrotnego wyboru
+            // Pytania są jednokrotnego wyboru: zaznaczenie nowej opcji
+            // czyści poprzednie zaznaczenie.
             selectedOptions.clear();
-            document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
-            
-            selectedOptions.add(optObj.originalIndex);
+            document.querySelectorAll(".option").forEach((el) => el.classList.remove("selected"));
+
+            selectedOptions.add(optionData.originalIndex);
             this.classList.add("selected");
 
-            document.getElementById("check-btn").disabled = false;
+            dom.checkBtn.disabled = false;
           });
 
-          optionsContainer.appendChild(optDiv);
+          dom.optionsContainer.appendChild(optionDiv);
         });
       }
 
+      /** Sprawdza zaznaczoną odpowiedź, koloruje opcje i pokazuje feedback. */
       function checkAnswer() {
         isQuestionChecked = true;
-        document.getElementById("check-btn").classList.add("hidden");
-        document.getElementById("next-btn").classList.remove("hidden");
+        dom.checkBtn.classList.add("hidden");
+        dom.nextBtn.classList.remove("hidden");
 
-        const q = currentSessionQuestions[currentQuestionIndex];
-        const correctSet = new Set(q.correct);
+        const currentQuestion = currentSessionQuestions[currentQuestionIndex];
+        const correctSet = new Set(currentQuestion.correct);
 
-        let isPerfect = true;
-        if (selectedOptions.size !== correctSet.size) {
-          isPerfect = false;
-        } else {
-          for (let selected of selectedOptions) {
+        let isAnswerCorrect = selectedOptions.size === correctSet.size;
+        if (isAnswerCorrect) {
+          for (const selected of selectedOptions) {
             if (!correctSet.has(selected)) {
-              isPerfect = false;
+              isAnswerCorrect = false;
               break;
             }
           }
         }
 
-        document.querySelectorAll(".option").forEach((optDiv) => {
-          const originalIndex = parseInt(optDiv.dataset.originalIndex);
+        document.querySelectorAll(".option").forEach((optionDiv) => {
+          const originalIndex = parseInt(optionDiv.dataset.originalIndex, 10);
           const isSelected = selectedOptions.has(originalIndex);
           const isActuallyCorrect = correctSet.has(originalIndex);
 
-          optDiv.classList.remove("selected");
+          optionDiv.classList.remove("selected");
 
           if (isActuallyCorrect) {
-            optDiv.classList.add("correct-answer");
-          } else if (isSelected && !isActuallyCorrect) {
-            optDiv.classList.add("wrong-answer");
+            optionDiv.classList.add("correct-answer");
+          } else if (isSelected) {
+            optionDiv.classList.add("wrong-answer");
           }
         });
 
-        const feedbackEl = document.getElementById("feedback-message");
-        if (isPerfect) {
+        if (isAnswerCorrect) {
           score++;
-          feedbackEl.innerHTML = "<strong>Świetnie! Poprawna odpowiedź.</strong>";
-          feedbackEl.classList.add("correct");
+          dom.feedbackMessage.innerHTML = "<strong>Świetnie! Poprawna odpowiedź.</strong>";
+          dom.feedbackMessage.classList.add("correct");
         } else {
-          feedbackEl.innerHTML = "<strong>Niestety, to nie ta odpowiedź.</strong><br>Prawidłowa została zaznaczona na zielono.";
-          feedbackEl.classList.add("incorrect");
+          dom.feedbackMessage.innerHTML =
+            "<strong>Niestety, to nie ta odpowiedź.</strong><br>Prawidłowa została zaznaczona na zielono.";
+          dom.feedbackMessage.classList.add("incorrect");
         }
 
-        if (q.explanation && q.explanation.trim() !== "") {
-          const expDiv = document.createElement("div");
-          expDiv.className = "explanation";
-          expDiv.innerHTML = "<strong>Uzasadnienie:</strong><br>" + formatCode(q.explanation);
-          feedbackEl.appendChild(expDiv);
+        if (currentQuestion.explanation) {
+          const explanationDiv = document.createElement("div");
+          explanationDiv.className = "explanation";
+          explanationDiv.innerHTML = "<strong>Uzasadnienie:</strong><br>" + formatCode(currentQuestion.explanation);
+          dom.feedbackMessage.appendChild(explanationDiv);
         }
 
-        if (currentQuestionIndex === currentSessionQuestions.length - 1) {
-          document.getElementById("next-btn").innerText = "Zakończ i pokaż wynik";
+        const isLastQuestion = currentQuestionIndex === currentSessionQuestions.length - 1;
+        if (isLastQuestion) {
+          dom.nextBtn.innerText = "Zakończ i pokaż wynik";
         }
       }
 
+      /** Przechodzi do kolejnego pytania albo, jeśli to było ostatnie, do wyniku. */
       function nextQuestion() {
         currentQuestionIndex++;
         if (currentQuestionIndex < currentSessionQuestions.length) {
@@ -1242,13 +1465,23 @@ Uzasadnienie: Korzystanie ze stylów drastycznie ogranicza "puchnięcie" powtarz
         }
       }
 
+      /** Pokazuje ekran podsumowania z wynikiem sesji. */
       function showResult() {
-        document.getElementById("quiz-screen").classList.add("hidden");
-        document.getElementById("result-screen").classList.remove("hidden");
+        dom.quizScreen.classList.add("hidden");
+        dom.resultScreen.classList.remove("hidden");
 
         const percentage = Math.round((score / currentSessionQuestions.length) * 100);
-        document.getElementById("score").innerText = `${score} / ${currentSessionQuestions.length} \n(${percentage}%)`;
+        dom.score.innerText = `${score} / ${currentSessionQuestions.length} \n(${percentage}%)`;
       }
+
+      /* ================================================================
+         6. PODŁĄCZENIE OBSŁUGI ZDARZEŃ (uruchamiane na końcu, po tym jak
+         wszystkie potrzebne funkcje są już zadeklarowane).
+         ================================================================ */
+      dom.startBtn.addEventListener("click", startQuiz);
+      dom.checkBtn.addEventListener("click", checkAnswer);
+      dom.nextBtn.addEventListener("click", nextQuestion);
+      dom.restartBtn.addEventListener("click", startQuiz);
     </script>
   </body>
 </html>
