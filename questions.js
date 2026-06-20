@@ -95,7 +95,7 @@ const allQuestions = [
       "reprezentuje bazę danych",
       "mapuje zapytania SQL na metody"
     ],
-    "correct": [0],
+    "correct": [1],
     "explanation": "Slajd 153"
   },
   {
@@ -174,17 +174,6 @@ const allQuestions = [
     ],
     "correct": [1],
     "explanation": "Slajd 272 💀💀💀"
-  },
-  {
-    "question": "Który opis elementy interfejsu systemu Wear OS jest niewłaściwy",
-    "options": [
-      "nakładki – elementy wyświetlane nad innymi",
-      "komplikacja – element prezentujący informację, którą użytkownik będzie sprawdzał wiele razy dziennie",
-      "powiadomienie – prezentuje ważne informacje, zapewnia akcje kontekstowe",
-      "kafelek – zapewnia szybki dostęp do ważnych informacji / akcji"
-    ],
-    "correct": [0],
-    "explanation": "\"nakładki (ang. overlay) – interaktywne przewijane listy\" (slajd 364)"
   },
   {
     "question": "Google dostarcza narzędzia do tworzenia aplikacji na Androida dla następujących systemów (wybierz odpowiedź uwzględniającą wszystkie systemy):",
@@ -678,7 +667,7 @@ const allQuestions = [
       "metody executeActivity(nazwaAktywności)",
       "metody startActivityForResult(intencja)"
     ],
-    "correct": [0],
+    "correct": [2],
     "explanation": "We frameworku systemu Android po prostu nie istnieje metoda o nazwie executeActivity()."
   },
   {
@@ -733,7 +722,7 @@ const allQuestions = [
       "umożliwiają przechowywanie ustawień współnych dla wszystkich elementów aplikacji",
       "umożliwiają tylko przechowywanie tekstów"
     ],
-    "correct": [0],
+    "correct": [2],
     "explanation": "Ten prosty w użyciu mechanizm mapy klucz-wartość pozwala na natychmiastowe odczytanie globalnych preferencji użytkownika w obrębie dowolnej aktywności czy fragmentu danej aplikacji."
   },
   {
