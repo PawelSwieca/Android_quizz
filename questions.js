@@ -187,17 +187,6 @@ const allQuestions = [
     "explanation": "No tak było i nie zmyślam"
   },
   {
-    "question": "Ustawienia współdzielone",
-    "options": [
-      "umożliwiają przechowywanie ustawień wspólnych dla wszystkich aplikacji",
-      "wymagają zapisywania i odczytywania danych w określonej kolejności",
-      "umożliwiają tylko przechowywanie tekstów",
-      "umożliwiają przechowywanie ustawień wspólnych dla wszystkichelementów aplikacji"
-    ],
-    "correct": [3],
-    "explanation": "\"Ustawienia współdzielone dostępne są dla wszystkich elementów aplikacji\" (slajd 183)"
-  },
-  {
     "question": "Połączenie sieciowe standardowego emulatora Androida jest zrealizowane następująco:",
     "options": [
       "emulator jest widoczny w sieci jako osobne urządzenie w sieci",
