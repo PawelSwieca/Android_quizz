@@ -891,39 +891,6 @@ const allQuestions = [
     "explanation": "Pełen zestaw środowiskowy potrzebny do wygenerowania paczki instalacyjnej (APK/AAB) zawsze zakłada obecność kodu imperatywnego, zasobów deklaratywnych i pobranych zależności. Slajd 35"
   },
   {
-    "question": "Przycisk ElevatedButton można zdezaktywować",
-    "options": [
-      "ustawiając parametr onPressed konstruktora na pustą funkcję () {}",
-      "ustawiając parametr disabled konstruktora na true",
-      "ustawiając parametr onPressed konstruktora na null",
-      "ustawiając parametr enabled konstruktora na false"
-    ],
-    "correct": [2],
-    "explanation": "Przekazanie wartości null jako metody na zdarzenie w środowisku Fluttera automatycznie, natychmiastowo wyszarza ten przycisk bez potrzeby używania oddzielnych flag stanów."
-  },
-  {
-    "question": "Do reagowania na zdarzenia takie jak naciśnięcie, przesunięcie czy zwolnienie służy",
-    "options": [
-      "Mouse Region",
-      "GestureDetector",
-      "Listener",
-      "MouseDetector"
-    ],
-    "correct": [1],
-    "explanation": "Jest to niewidzialny widget Fluttera nasłuchujący konkretnego rodzaju fizycznych interakcji z nałożonym niżej w drzewie dzieckiem graficznym, wspierający obsługę nie tylko stuknięć, ale również m.in \"swipe-ów\" czy podwójnych naciśnięć."
-  },
-  {
-    "question": "Szablonem aplikacji Material Design jest",
-    "options": [
-      "Scaffold",
-      "Template",
-      "MaterialScaffold",
-      "FlutterApp"
-    ],
-    "correct": [0],
-    "explanation": "Widżet Scaffold z biblioteki material służy jako gotowe rusztowanie ekranu, zapewniając domyślne kotwice pod pasek górny, pole główne czy dolne paski nawigacyjne w oparciu o wytyczne Google."
-  },
-  {
     "question": "Korzystanie z Firebase w aplikacji mobilnej nie wymaga",
     "options": [
       "dodania aplikacji i pobrania konfiguracji w pliku json",
@@ -935,17 +902,6 @@ const allQuestions = [
     "explanation": "Podłączenie modułu statystyk ułatwia śledzenie demografii, natomiast system ten jest rozwiązaniem opcjonalnym, odseparowanym od fundamentu bazy i nie blokuje dostępu np. do uwierzytelniania w backendzie. Slajdy 258"
   },
   {
-    "question": "Do przebudowania interfejsu aplikacji w momencie pojawienia się wartości w przyszłości służy",
-    "options": [
-      "klasa FutureBuilder",
-      "metoda whenReady()",
-      "klasa FutureListene",
-      "metoda rebuildUI()"
-    ],
-    "correct": [0],
-    "explanation": "Flutterowy FutureBuilder potrafi w pełni samodzielnie podglądać nadaną mu operację asynchroniczną i dostarczać na żywo adekwatne stany ładowania, obsługi błędów oraz renderować UI przy ostatecznym rozwiązaniu żądania."
-  },
-  {
     "question": "Klasa Platform nie pozwala na sprawdzenie",
     "options": [
       "nazwy komputera",
@@ -955,17 +911,6 @@ const allQuestions = [
     ],
     "correct": [2],
     "explanation": "Interfejs Platform w Dart pozwala na rozpoznawanie np. wersji jądra pod spodem, z kolei badanie właściwości stricte ekranowych opiera się już na silniku interfejsu poprzez zbadanie np. elementu MediaQuery."
-  },
-  {
-    "question": "Uzyskanie informacji o standardowych ścieżkach przechowywania plików umożliwiabiblioteka",
-    "options": [
-      "path_environment",
-      "file_locations",
-      "path_provider",
-      "default_dirs"
-    ],
-    "correct": [2],
-    "explanation": "Jest to kluczowy pakiet Fluttera, który standaryzuje różniące się systemy folderów obu systemów (iOS oraz Android) odnajdując właściwe linki np. do katalogów danych tymczasowych."
   },
   {
     "question": "Style:",
