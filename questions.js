@@ -190,11 +190,11 @@ const allQuestions = [
     "question": "Połączenie sieciowe standardowego emulatora Androida jest zrealizowane następująco:",
     "options": [
       "emulator jest widoczny w sieci jako osobne urządzenie w sieci",
-      "wszystkie działające emulatory połączone są do wspólnegowirtualnego routera",
+      "wszystkie działające emulatory połączone są do wspólnego wirtualnego routera",
       "emulator jest dostępny pod adresem komputera",
       "każdy działający emulator jest podłączony do jego własnego wirtualnego routera"
     ],
-    "correct": [1],
+    "correct": [3],
     "explanation": "Slajd 231"
   },
   {
